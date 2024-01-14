@@ -1,0 +1,62 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+
+    <Version>0.1.0</Version>
+    <Authors>Alexander "Ananace" Olofsson</Authors>
+    <Company>Introvert Software</Company>
+    <Product>AnalogGridControlPlugin</Product>
+    <PackageId>AnalogGridControlPlugin</PackageId>
+    <NeutralLanguage>en</NeutralLanguage>
+    <Description>Analog Grid Control Plugin for Space Engineers</Description>
+    <Copyright>Copyright © Alexander "Ananace" Olofsson 2024</Copyright>
+    <RepositoryUrl>https://github.com/ananace/dotnet-SEAnalogGridControlPlugin</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Override in a AnalogGridControlPlugin.csproj.user file -->
+    <SpaceEngineersBin64>/path/to/SteamLibrary/steamapps/common/SpaceEngineers/Bin64</SpaceEngineersBin64>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="HarmonyLib">
+      <Private>false</Private>
+      <HintPath>$(SpaceEngineersBin64)/0Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="Sandbox.Common">
+      <Private>false</Private>
+      <HintPath>$(SpaceEngineersBin64)/Sandbox.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Sandbox.Game">
+      <Private>false</Private>
+      <HintPath>$(SpaceEngineersBin64)/Sandbox.Game.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX">
+      <Private>false</Private>
+      <HintPath>$(SpaceEngineersBin64)/SharpDX.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.DirectInput">
+      <Private>false</Private>
+      <HintPath>$(SpaceEngineersBin64)/SharpDX.DirectInput.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage">
+      <Private>false</Private>
+      <HintPath>$(SpaceEngineersBin64)/VRage.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage.Library">
+      <Private>false</Private>
+      <HintPath>$(SpaceEngineersBin64)/VRage.Library.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage.Game">
+      <Private>false</Private>
+      <HintPath>$(SpaceEngineersBin64)/VRage.Game.dll</HintPath>
+    </Reference>
+    <Reference Include="VRageMath">
+      <Private>false</Private>
+      <HintPath>$(SpaceEngineersBin64)/VRage.Math.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
