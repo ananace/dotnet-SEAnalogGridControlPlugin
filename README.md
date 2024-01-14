@@ -24,6 +24,7 @@ To Do;
 - [ ] More bindable actions
   - [ ] Targeting
   - [ ] Reloading
+- [ ] Ensure multiplayer works
 - [ ] Configuration UI
 - [ ] Exception handling _everywhere_
 - [ ] Pretty code
