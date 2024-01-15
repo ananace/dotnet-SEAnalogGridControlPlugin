@@ -1,6 +1,6 @@
-﻿using Sandbox.ModAPI;
-using SharpDX.DirectInput;
-using System.Collections.Generic;
+﻿using AnanaceDev.AnalogGridControl.InputMapping;
+using AnanaceDev.AnalogGridControl.Util;
+using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;

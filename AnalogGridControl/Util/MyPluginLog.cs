@@ -1,7 +1,7 @@
 using System;
 using VRage.Utils;
 
-namespace AnanaceDev.AnalogGridControl
+namespace AnanaceDev.AnalogGridControl.Util
 {
 
   public enum MyPluginLogLevel

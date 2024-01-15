@@ -1,7 +1,9 @@
+using AnanaceDev.AnalogGridControl.InputMapping;
 using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 using SharpDX.DirectInput;
+using AnanaceDev.AnalogGridControl.Util;
 
 namespace AnanaceDev.AnalogGridControl
 {
@@ -12,8 +14,8 @@ namespace AnanaceDev.AnalogGridControl
     public string DeviceName { get; set; }
     [XmlAttribute("GUID")]
     public Guid DeviceUUID { get; set; }
-    [XmlArray("Mappings"), XmlArrayItem("Mapping")]
-    public List<InputMapping> Mappings { get; private set; } = new List<InputMapping>();
+    [XmlArray("Binds"), XmlArrayItem("Bind")]
+    public List<Bind> Binds { get; private set; } = new List<Bind>();
 
     [XmlIgnore]
     public DirectInput DInput { get; private set; }
@@ -30,7 +32,7 @@ namespace AnanaceDev.AnalogGridControl
     [XmlIgnore]
     public bool IsAcquired => _Acquired;
     [XmlIgnore]
-    public bool HasMappings => Mappings.Count > 0;
+    public bool HasBinds => Binds.Count > 0;
 
     [XmlElement]
     public InputRange DefaultRange { get; set; } = new InputRange(ushort.MinValue, ushort.MaxValue);
@@ -105,8 +107,8 @@ namespace AnanaceDev.AnalogGridControl
       LastState = CurrentState;
       CurrentState = Joystick.GetCurrentState();
 
-      foreach (var mapping in Mappings)
-        mapping.Apply(CurrentState, this);
+      foreach (var bind in Binds)
+        bind.Apply(CurrentState, this);
     }
   }
 }

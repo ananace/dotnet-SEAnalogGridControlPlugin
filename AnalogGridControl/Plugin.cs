@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
+using AnanaceDev.AnalogGridControl.Util;
 using HarmonyLib;
 using SharpDX.DirectInput;
 using VRage.FileSystem;

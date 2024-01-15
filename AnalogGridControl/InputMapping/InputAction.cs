@@ -1,4 +1,4 @@
-namespace AnanaceDev.AnalogGridControl
+namespace AnanaceDev.AnalogGridControl.InputMapping
 {
 
   public enum InputAction

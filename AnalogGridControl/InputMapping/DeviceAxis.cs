@@ -1,6 +1,6 @@
 using SharpDX.DirectInput;
 
-namespace AnanaceDev.AnalogGridControl
+namespace AnanaceDev.AnalogGridControl.InputMapping
 {
 
   public enum DeviceAxis

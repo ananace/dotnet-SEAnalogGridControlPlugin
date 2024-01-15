@@ -4,10 +4,10 @@ using System.Xml.Schema;
 using System.Xml.Serialization;
 using SharpDX.DirectInput;
 
-namespace AnanaceDev.AnalogGridControl
+namespace AnanaceDev.AnalogGridControl.InputMapping
 {
 
-  public class InputMapping : IXmlSerializable
+  public class Bind : IXmlSerializable
   {
     public DeviceAxis? InputAxis { get; set; } = null;
     public int? InputButton { get; set; } = null;
@@ -139,7 +139,7 @@ namespace AnanaceDev.AnalogGridControl
       if (reader.GetAttribute("Curve") is string curve)
         Curve = float.Parse(curve);
 
-      reader.ReadToNextSibling("Mapping");
+      reader.ReadToNextSibling("Bind");
     }
 
     public XmlSchema GetSchema()

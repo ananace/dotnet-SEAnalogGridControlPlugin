@@ -1,3 +1,5 @@
+using AnanaceDev.AnalogGridControl.InputMapping;
+using AnanaceDev.AnalogGridControl.Util;
 using SharpDX.DirectInput;
 using System;
 using System.Collections.Generic;
@@ -52,12 +54,12 @@ namespace AnanaceDev.AnalogGridControl
       _Actions.Clear();
       foreach (var device in _Inputs)
       {
-        if (!device.IsValid || !device.IsAcquired || !device.HasMappings)
+        if (!device.IsValid || !device.IsAcquired || !device.HasBinds)
           continue;
 
         device.Update();
 
-        foreach (var mapping in device.Mappings)
+        foreach (var mapping in device.Binds)
         {
           if (mapping.IsAxisMapping)
           {
