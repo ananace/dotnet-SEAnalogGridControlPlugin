@@ -23,6 +23,10 @@ namespace AnanaceDev.AnalogGridControl
     {
       return IsInputActive(action) && !WasInputActive(action);
     }
+    public bool IsInputJustDeactivated(InputAction action)
+    {
+      return WasInputActive(action) && !IsInputActive(action);
+    }
     /// Is the input currently active
     public bool IsInputActive(InputAction action)
     {
@@ -34,6 +38,8 @@ namespace AnanaceDev.AnalogGridControl
     }
 
     float ForwardMult = -1;
+    DateTime ForwardMultInvertAt = DateTime.MinValue;
+    
     public Vector3 MovementVector;
     public Vector3 RotationVector;
 
@@ -105,7 +111,14 @@ namespace AnanaceDev.AnalogGridControl
       {
         MyPluginLog.Info("Inverting forward strafe");
         ForwardMult = -ForwardMult;
+        ForwardMultInvertAt = DateTime.Now;
       }
+      else if (IsInputJustDeactivated(InputAction.InvertStrafeForward) && (DateTime.Now - ForwardMultInvertAt) > TimeSpan.FromMilliseconds(500))
+      {
+        MyPluginLog.Info("Forward strafe invert released after hold, re-inverting");
+        ForwardMult = -ForwardMult;
+      }
+
       if (IsInputJustActivated(InputAction.SwitchAnalogInputActive))
       {
         MyPluginLog.Info("Toggling analog input active");
