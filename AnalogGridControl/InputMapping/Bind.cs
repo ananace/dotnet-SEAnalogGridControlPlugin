@@ -16,10 +16,10 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
     public bool MappingAxisInvert { get; set; } = false;
     public InputAction? MappingAction { get; set; } = null;
 
+    public float Value { get; private set; }
     public bool IsActive { get; private set; }
     public bool IsAxisMapping { get { return MappingAxis.HasValue; } }
     public bool IsActionMapping { get { return MappingAction.HasValue; } }
-    public float Value { get; private set; }
 
     public float Deadzone { get; set; } = 0.05f;
     public float Multiplier { get; set; } = 1.0f;
@@ -34,49 +34,51 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
     }
     public bool Apply(JoystickState state, InputDevice device)
     {
-      int? newValue = null;
-      float? mappedValue = null;
+      int? intValue = null;
+      float? floatValue = null;
 
       if (InputAxis.HasValue)
       {
         switch (InputAxis)
         {
-          case DeviceAxis.X: newValue = state.X; break;
-          case DeviceAxis.Y: newValue = state.Y; break;
-          case DeviceAxis.Z: newValue = state.Z; break;
-          case DeviceAxis.RX: newValue = state.RotationX; break;
-          case DeviceAxis.RY: newValue = state.RotationY; break;
-          case DeviceAxis.RZ: newValue = state.RotationZ; break;
+          case DeviceAxis.X: intValue = state.X; break;
+          case DeviceAxis.Y: intValue = state.Y; break;
+          case DeviceAxis.Z: intValue = state.Z; break;
+          case DeviceAxis.RX: intValue = state.RotationX; break;
+          case DeviceAxis.RY: intValue = state.RotationY; break;
+          case DeviceAxis.RZ: intValue = state.RotationZ; break;
+          case DeviceAxis.Slider0: intValue = state.Sliders[0]; break;
+          case DeviceAxis.Slider1: intValue = state.Sliders[1]; break;
         }
 
         var range = device.GetRange(InputAxis.Value);
 
-        mappedValue = ((float)newValue / (float)range.Maximum);
+        floatValue = ((float)intValue / (float)range.Maximum);
         if (MappingAxisInvert)
-          mappedValue = 1.0f - mappedValue;
+          floatValue = 1.0f - floatValue;
 
-        if (mappedValue > 1.0f - Deadzone)
-          mappedValue = 1.0f;
-        else if (mappedValue > 0.5f - Deadzone / 2 && mappedValue < 0.5f + Deadzone / 2)
-          mappedValue = 0.5f;
-        else if (mappedValue < Deadzone)
-          mappedValue = 0.0f;
+        if (floatValue > 1.0f - Deadzone)
+          floatValue = 1.0f;
+        else if (floatValue > 0.5f - Deadzone / 2 && floatValue < 0.5f + Deadzone / 2)
+          floatValue = 0.5f;
+        else if (floatValue < Deadzone)
+          floatValue = 0.0f;
 
         if (Curve != 0.0f)
         {
           var curve = Math.Max(0.0f, Math.Min(1.0f, Curve));
-          mappedValue = curve * (float)Math.Pow(mappedValue.Value, 3) + (1 - curve) * mappedValue.Value;
+          floatValue = curve * (float)Math.Pow(floatValue.Value, 3) + (1 - curve) * floatValue.Value;
         }
       }
       else if (InputButton.HasValue)
-        newValue = state.Buttons[InputButton.Value] ? 1 : 0;
+        intValue = state.Buttons[InputButton.Value] ? 1 : 0;
 
-      if (newValue != null)
+      if (intValue != null)
       {
-        if (mappedValue.HasValue)
-          Value = mappedValue.Value;
+        if (floatValue.HasValue)
+          Value = floatValue.Value;
         else
-          Value = newValue.Value;
+          Value = intValue.Value;
 
         IsActive = Value >= 0.75f;
 
@@ -88,7 +90,7 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
         */
       }
 
-      return newValue != null;
+      return intValue != null;
     }
 
 #region XML Serialization

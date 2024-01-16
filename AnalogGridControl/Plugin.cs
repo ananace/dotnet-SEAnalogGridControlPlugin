@@ -67,7 +67,7 @@ namespace AnanaceDev.AnalogGridControl
           dev = new InputDevice();
         }
 
-        dev.Acquire(DInput, device);
+        dev.Init(DInput, device);
 
         if (!Plugin.InputRegistry.HasDevice(device))
         {

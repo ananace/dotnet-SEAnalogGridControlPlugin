@@ -12,6 +12,8 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
     FireSecondary,
     FireTertiary,
 
+    Target,
+    WheelJump,
     Brake,
 
     SwitchLights,
@@ -29,7 +31,12 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
     ToolbarAction7,
     ToolbarAction8,
     ToolbarAction9,
-    ToolbarAction10,
+    ToolbarActionHolster,
+
+    ToolbarSwitchNext,
+    ToolbarSwitchPrev,
+    ToolbarActionNext,
+    ToolbarActionPrev,
   }
 
 }

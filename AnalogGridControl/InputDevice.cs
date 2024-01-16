@@ -26,11 +26,10 @@ namespace AnanaceDev.AnalogGridControl
 
     Dictionary<DeviceAxis, InputRange> _Ranges = new Dictionary<DeviceAxis, InputRange>();
 
-    bool _Acquired = false;
     [XmlIgnore]
     public bool IsValid => DInput != null && Device != null && Joystick != null;
     [XmlIgnore]
-    public bool IsAcquired => _Acquired;
+    public bool IsAcquired { get; private set; } = false;
     [XmlIgnore]
     public bool HasBinds => Binds.Count > 0;
 
@@ -42,13 +41,20 @@ namespace AnanaceDev.AnalogGridControl
     public IReadOnlyDictionary<DeviceAxis, InputRange> Ranges => _Ranges;
 
     [XmlIgnore]
+    public IEnumerable<DeviceAxis> Axes => _Ranges.Keys;
+    [XmlIgnore]
+    public int Buttons { get; private set; } = -1;
+    [XmlIgnore]
+    public int POVHats { get; private set; } = -1;
+
+    [XmlIgnore]
     public JoystickState CurrentState { get; private set; }
     [XmlIgnore]
     public JoystickState LastState { get; private set; }
 
-    public void Acquire(DirectInput dinput, DeviceInstance instance)
+    public void Init(DirectInput dinput, DeviceInstance instance)
     {
-      MyPluginLog.Debug($"{instance.InstanceName}/{instance.InstanceGuid} - Acquiring");
+      MyPluginLog.Debug($"{instance.InstanceName}/{instance.InstanceGuid} - Initializing");
 
       DInput = dinput;
       Device = instance;
@@ -60,6 +66,13 @@ namespace AnanaceDev.AnalogGridControl
       if (Joystick != null)
       {
         Joystick.Properties.AxisMode = DeviceAxisMode.Absolute;
+
+        try {
+          var devImage = Joystick.GetDeviceImages();
+
+          Buttons = devImage.ButtonCount;
+          POVHats = devImage.PovCount;
+        } catch {}
 
         foreach (var axis in Joystick.GetObjects())
         {
@@ -80,12 +93,18 @@ namespace AnanaceDev.AnalogGridControl
       {
         MyPluginLog.Warning($"{instance.InstanceName} - Failed to retrieve joystick object.");
       }
+    }
+
+    public void Acquire()
+    {
+      if (IsAcquired)
+        return;
 
       if (IsValid)
       {
         Joystick.Acquire();
         LastState = CurrentState = Joystick.GetCurrentState();
-        _Acquired = true;
+        IsAcquired = true;
         MyPluginLog.Debug($"{Device.InstanceName} - Acquired");
       }
       else

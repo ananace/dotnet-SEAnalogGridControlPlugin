@@ -3,7 +3,7 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
 
   public enum InputAxis
   {
-    // For HOTAS usage, single-axis swapped on button press
+    // For HOTAS/pedal usage, single-axis which swaps direction on button press
     StrafeForward,
 
     StrafeForwardBackward,

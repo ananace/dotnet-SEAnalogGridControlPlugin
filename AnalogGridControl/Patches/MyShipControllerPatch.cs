@@ -23,6 +23,9 @@ namespace AnanaceDev.AnalogGridControl.Patches
       if (!analogInput.IsAnalogInputActive)
         return;
 
+      if (Sandbox.Game.Gui.MyGuiScreenGamePlay.DisableInput)
+        return;
+
       /// Inject analog input before the ship controller calculates the final movement data.
       /// Only direct player input seems to have actual analog scaling, autopilot and injected thrust intputs are binary - a.k.a. only zero or full, and overrides are messy.
       /// Also it's currently impossible to inject direct wheel inputs without overrides.
