@@ -2,7 +2,7 @@ using System;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
-using AnanaceDev.AnalogGridControl.Util;
+// using AnanaceDev.AnalogGridControl.Util;
 using SharpDX.DirectInput;
 
 namespace AnanaceDev.AnalogGridControl.InputMapping
@@ -13,9 +13,9 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
     public DeviceAxis? InputAxis { get; set; } = null;
     public int? InputButton { get; set; } = null;
 
-    public InputAxis? MappingAxis { get; set; } = null;
+    public GameAxis? MappingAxis { get; set; } = null;
     public bool MappingAxisInvert { get; set; } = false;
-    public InputAction? MappingAction { get; set; } = null;
+    public GameAction? MappingAction { get; set; } = null;
 
     public float Value { get; private set; }
     public bool IsActive { get; private set; }
@@ -68,11 +68,11 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
         if (Curve != 0.0f)
         {
           var curve = Math.Max(0.0f, Math.Min(1.0f, Curve));
-          var before = floatValue.Value;
+          // var before = floatValue.Value;
 
           // Remap both halves of input so that the curve applies properly
           bool? positive = null;
-          if (MappingAxis != InputMapping.InputAxis.StrafeForward)
+          if (MappingAxis != InputMapping.GameAxis.StrafeForward)
           {
             positive = floatValue.Value >= 0.5f;
             floatValue = floatValue.Value < 0.5f ? (0.5f - floatValue) * 2 : (floatValue - 0.5f) * 2;
@@ -83,7 +83,7 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
           if (positive.HasValue)
             floatValue = positive.Value ? floatValue * 0.5f + 0.5f : 0.5f - floatValue * 0.5f;
 
-          MyPluginLog.Debug($"Bind {device.DeviceName} :: {InputAxis}->{MappingAxis} applying curve {curve}: {before} -> {floatValue}");
+          // MyPluginLog.Debug($"Bind {device.DeviceName} :: {InputAxis}->{MappingAxis} applying curve {curve}: {before} -> {floatValue}");
         }
       }
       else if (InputButton.HasValue)
@@ -100,7 +100,7 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
 
         /*
         if (MappingAxis.HasValue)
-          MyPluginLog.Debug($"InputMapping {InputAxis}->{MappingAxis} (inv? {MappingAxisInvert}) => {intValue} -> {Value}");
+          MyPluginLog.Debug($"InputMapping {GameAxis}->{MappingAxis} (inv? {MappingAxisInvert}) => {intValue} -> {Value}");
         else
           MyPluginLog.Debug($"InputMapping {InputButton}->{MappingAction} => {intValue} -> {Value} ({IsActive})");
         */
@@ -143,12 +143,12 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
 
       if (reader.GetAttribute("OutputAxis") is string outputAxis)
       {
-        MappingAxis = (InputAxis)Enum.Parse(typeof(InputAxis), outputAxis);
+        MappingAxis = (GameAxis)Enum.Parse(typeof(GameAxis), outputAxis);
         if (reader.GetAttribute("OutputAxisInvert") is string invert)
           MappingAxisInvert = bool.Parse(invert);
       }
       else if (reader.GetAttribute("OutputAction") is string action)
-        MappingAction = (InputAction)Enum.Parse(typeof(InputAction), action);
+        MappingAction = (GameAction)Enum.Parse(typeof(GameAction), action);
 
       if (reader.GetAttribute("Deadzone") is string deadzone)
         Deadzone = float.Parse(deadzone);

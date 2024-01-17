@@ -13,26 +13,26 @@ namespace AnanaceDev.AnalogGridControl
   {
     public bool IsAnalogInputActive { get; set; }
 
-    public event EventHandler<InputAction> ActionTriggered;
-    public event EventHandler<InputAction> ActionBegin;
-    public event EventHandler<InputAction> ActionEnd;
+    public event EventHandler<GameAction> ActionTriggered;
+    public event EventHandler<GameAction> ActionBegin;
+    public event EventHandler<GameAction> ActionEnd;
 
     /// Is the input activated for this tick?
     /// Only true for the first tick the input activates
-    public bool IsInputJustActivated(InputAction action)
+    public bool IsInputJustActivated(GameAction action)
     {
       return IsInputActive(action) && !WasInputActive(action);
     }
-    public bool IsInputJustDeactivated(InputAction action)
+    public bool IsInputJustDeactivated(GameAction action)
     {
       return WasInputActive(action) && !IsInputActive(action);
     }
     /// Is the input currently active
-    public bool IsInputActive(InputAction action)
+    public bool IsInputActive(GameAction action)
     {
       return (_Actions.ContainsKey(action) && _Actions[action]);
     }
-    public bool WasInputActive(InputAction action)
+    public bool WasInputActive(GameAction action)
     {
       return (_LastActions.ContainsKey(action) && _LastActions[action]);
     }
@@ -46,8 +46,8 @@ namespace AnanaceDev.AnalogGridControl
     public DirectInput DInput { get; set; }
     List<InputDevice> _Inputs = new List<InputDevice>();
 
-    Dictionary<InputAction, bool> _LastActions = new Dictionary<InputAction, bool>();
-    Dictionary<InputAction, bool> _Actions = new Dictionary<InputAction, bool>();
+    Dictionary<GameAction, bool> _LastActions = new Dictionary<GameAction, bool>();
+    Dictionary<GameAction, bool> _Actions = new Dictionary<GameAction, bool>();
 
     public void RegisterInput(InputDevice device)
     {
@@ -57,7 +57,7 @@ namespace AnanaceDev.AnalogGridControl
 
     public void UpdateInputs()
     {
-      _LastActions = new Dictionary<InputAction, bool>(_Actions);
+      _LastActions = new Dictionary<GameAction, bool>(_Actions);
       _Actions.Clear();
       foreach (var device in _Inputs)
       {
@@ -77,15 +77,15 @@ namespace AnanaceDev.AnalogGridControl
             float value = mapping.Value;
             switch (mapping.MappingAxis)
             {
-              case InputAxis.StrafeForward: MovementVector.Z = value * ForwardMult; break;
-              case InputAxis.StrafeForwardBackward: MovementVector.Z = (value - 0.5f) * 2; break;
+              case GameAxis.StrafeForward: MovementVector.Z = value * ForwardMult; break;
+              case GameAxis.StrafeForwardBackward: MovementVector.Z = (value - 0.5f) * 2; break;
 
-              case InputAxis.StrafeLeftRight: MovementVector.X = (value - 0.5f) * 2; break;
-              case InputAxis.StrafeUpDown: MovementVector.Y = (value - 0.5f) * 2; break;
+              case GameAxis.StrafeLeftRight: MovementVector.X = (value - 0.5f) * 2; break;
+              case GameAxis.StrafeUpDown: MovementVector.Y = (value - 0.5f) * 2; break;
 
-              case InputAxis.TurnPitch: RotationVector.X = (value - 0.5f) * -40; break;
-              case InputAxis.TurnYaw: RotationVector.Y = (value - 0.5f) * 40; break;
-              case InputAxis.TurnRoll: RotationVector.Z = (value - 0.5f) * 40; break;
+              case GameAxis.TurnPitch: RotationVector.X = (value - 0.5f) * -40; break;
+              case GameAxis.TurnYaw: RotationVector.Y = (value - 0.5f) * 40; break;
+              case GameAxis.TurnRoll: RotationVector.Z = (value - 0.5f) * 40; break;
             }
           }
 
@@ -97,7 +97,7 @@ namespace AnanaceDev.AnalogGridControl
         }
       }
 
-      foreach (var action in System.Enum.GetValues(typeof(InputAction)).Cast<InputAction>())
+      foreach (var action in System.Enum.GetValues(typeof(GameAction)).Cast<GameAction>())
       {
         if (IsInputActive(action) && !WasInputActive(action))
         {
@@ -112,19 +112,19 @@ namespace AnanaceDev.AnalogGridControl
         }
       }
 
-      if (IsInputJustActivated(InputAction.InvertStrafeForward))
+      if (IsInputJustActivated(GameAction.InvertStrafeForward))
       {
         MyPluginLog.Info("Inverting forward strafe");
         ForwardMult = -ForwardMult;
         ForwardMultInvertAt = DateTime.Now;
       }
-      else if (IsInputJustDeactivated(InputAction.InvertStrafeForward) && (DateTime.Now - ForwardMultInvertAt) > TimeSpan.FromMilliseconds(500))
+      else if (IsInputJustDeactivated(GameAction.InvertStrafeForward) && (DateTime.Now - ForwardMultInvertAt) > TimeSpan.FromMilliseconds(500))
       {
         MyPluginLog.Info("Forward strafe invert released after hold, re-inverting");
         ForwardMult = -ForwardMult;
       }
 
-      if (IsInputJustActivated(InputAction.SwitchAnalogInputActive))
+      if (IsInputJustActivated(GameAction.SwitchAnalogInputActive))
       {
         MyPluginLog.Info("Toggling analog input active");
         IsAnalogInputActive = !IsAnalogInputActive;

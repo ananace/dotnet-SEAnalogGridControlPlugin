@@ -117,9 +117,9 @@ namespace AnanaceDev.AnalogGridControl
       }
     }
 
-    private void OnActionTriggered(object _sender, InputAction action)
+    private void OnActionTriggered(object _sender, GameAction action)
     {
-      if (action == InputAction.SwitchAnalogInputActive && !Plugin.ControllerPatched && !Input.IsAnalogInputActive && CurrentControllable is Sandbox.Game.Entities.MyCockpit cockpit)
+      if (action == GameAction.SwitchAnalogInputActive && !Plugin.ControllerPatched && !Input.IsAnalogInputActive && CurrentControllable is Sandbox.Game.Entities.MyCockpit cockpit)
       {
         if (cockpit.EntityThrustComponent != null)
         {
@@ -138,11 +138,11 @@ namespace AnanaceDev.AnalogGridControl
 
       switch (action)
       {
-        case InputAction.SwitchLights: CurrentControllable.SwitchLights(); break;
-        case InputAction.SwitchDamping: CurrentControllable.SwitchDamping(); break;
-        case InputAction.SwitchHandbrake: CurrentControllable.SwitchHandbrake(); break;
-        case InputAction.SwitchReactors: CurrentControllable.SwitchReactorsLocal(); break;
-        case InputAction.SwitchLandingGears: CurrentControllable.SwitchLandingGears(); break;
+        case GameAction.SwitchLights: CurrentControllable.SwitchLights(); break;
+        case GameAction.SwitchDamping: CurrentControllable.SwitchDamping(); break;
+        case GameAction.SwitchHandbrake: CurrentControllable.SwitchHandbrake(); break;
+        case GameAction.SwitchReactors: CurrentControllable.SwitchReactorsLocal(); break;
+        case GameAction.SwitchLandingGears: CurrentControllable.SwitchLandingGears(); break;
       }
 
       var CurrentCockpit = CurrentControllable as Sandbox.Game.Entities.MyCockpit;
@@ -151,35 +151,35 @@ namespace AnanaceDev.AnalogGridControl
 
       switch (action)
       {
-        case InputAction.Target:
+        case GameAction.Target:
           if (CurrentCockpit.IsTargetLockingEnabled())
             CurrentCockpit.Pilot.TargetFocusComp.OnLockRequest();
           break;
-        case InputAction.ReleaseTarget:
+        case GameAction.ReleaseTarget:
           if (CurrentCockpit.IsTargetLockingEnabled())
             CurrentCockpit.Pilot.TargetLockingComp.ReleaseTargetLockRequest();
           break;
 
-        case InputAction.ToolbarAction1: CurrentCockpit.Toolbar.ActivateItemAtSlot(0); break;
-        case InputAction.ToolbarAction2: CurrentCockpit.Toolbar.ActivateItemAtSlot(1); break;
-        case InputAction.ToolbarAction3: CurrentCockpit.Toolbar.ActivateItemAtSlot(2); break;
-        case InputAction.ToolbarAction4: CurrentCockpit.Toolbar.ActivateItemAtSlot(3); break;
-        case InputAction.ToolbarAction5: CurrentCockpit.Toolbar.ActivateItemAtSlot(4); break;
-        case InputAction.ToolbarAction6: CurrentCockpit.Toolbar.ActivateItemAtSlot(5); break;
-        case InputAction.ToolbarAction7: CurrentCockpit.Toolbar.ActivateItemAtSlot(6); break;
-        case InputAction.ToolbarAction8: CurrentCockpit.Toolbar.ActivateItemAtSlot(7); break;
-        case InputAction.ToolbarAction9: CurrentCockpit.Toolbar.ActivateItemAtSlot(8); break;
+        case GameAction.ToolbarAction1: CurrentCockpit.Toolbar.ActivateItemAtSlot(0); break;
+        case GameAction.ToolbarAction2: CurrentCockpit.Toolbar.ActivateItemAtSlot(1); break;
+        case GameAction.ToolbarAction3: CurrentCockpit.Toolbar.ActivateItemAtSlot(2); break;
+        case GameAction.ToolbarAction4: CurrentCockpit.Toolbar.ActivateItemAtSlot(3); break;
+        case GameAction.ToolbarAction5: CurrentCockpit.Toolbar.ActivateItemAtSlot(4); break;
+        case GameAction.ToolbarAction6: CurrentCockpit.Toolbar.ActivateItemAtSlot(5); break;
+        case GameAction.ToolbarAction7: CurrentCockpit.Toolbar.ActivateItemAtSlot(6); break;
+        case GameAction.ToolbarAction8: CurrentCockpit.Toolbar.ActivateItemAtSlot(7); break;
+        case GameAction.ToolbarAction9: CurrentCockpit.Toolbar.ActivateItemAtSlot(8); break;
 
-        case InputAction.ToolbarActionHolster: CurrentCockpit.Toolbar.ActivateItemAtSlot(CurrentCockpit.Toolbar.SlotCount); break;
+        case GameAction.ToolbarActionHolster: CurrentCockpit.Toolbar.ActivateItemAtSlot(CurrentCockpit.Toolbar.SlotCount); break;
 
-        case InputAction.ToolbarSwitchNext: CurrentCockpit.Toolbar.PageUp(); break;
-        case InputAction.ToolbarSwitchPrev: CurrentCockpit.Toolbar.PageDown(); break;
-        case InputAction.ToolbarActionNext: CurrentCockpit.Toolbar.SelectNextSlot(); break;
-        case InputAction.ToolbarActionPrev: CurrentCockpit.Toolbar.SelectPreviousSlot(); break;
+        case GameAction.ToolbarSwitchNext: CurrentCockpit.Toolbar.PageUp(); break;
+        case GameAction.ToolbarSwitchPrev: CurrentCockpit.Toolbar.PageDown(); break;
+        case GameAction.ToolbarActionNext: CurrentCockpit.Toolbar.SelectNextSlot(); break;
+        case GameAction.ToolbarActionPrev: CurrentCockpit.Toolbar.SelectPreviousSlot(); break;
       }
     }
 
-    private void OnActionBegin(object _sender, InputAction action)
+    private void OnActionBegin(object _sender, GameAction action)
     {
       if (CurrentControllable == null || !Input.IsAnalogInputActive)
         return;
@@ -190,13 +190,13 @@ namespace AnanaceDev.AnalogGridControl
 
       switch (action)
       {
-        case InputAction.FirePrimary: CurrentCockpit.BeginShoot(MyShootActionEnum.PrimaryAction); break;
-        case InputAction.FireSecondary: CurrentCockpit.BeginShoot(MyShootActionEnum.SecondaryAction); break;
-        // case InputAction.FireTertiary: CurrentCockpit.BeginShoot(MyShootActionEnum.TertiaryAction); break;
+        case GameAction.FirePrimary: CurrentCockpit.BeginShoot(MyShootActionEnum.PrimaryAction); break;
+        case GameAction.FireSecondary: CurrentCockpit.BeginShoot(MyShootActionEnum.SecondaryAction); break;
+        // case GameAction.FireTertiary: CurrentCockpit.BeginShoot(MyShootActionEnum.TertiaryAction); break;
       }
     }
 
-    private void OnActionEnd(object _sender, InputAction action)
+    private void OnActionEnd(object _sender, GameAction action)
     {
       if (CurrentControllable == null || !Input.IsAnalogInputActive)
         return;
@@ -207,9 +207,9 @@ namespace AnanaceDev.AnalogGridControl
 
       switch (action)
       {
-        case InputAction.FirePrimary: CurrentCockpit.EndShoot(MyShootActionEnum.PrimaryAction); break;
-        case InputAction.FireSecondary: CurrentCockpit.EndShoot(MyShootActionEnum.SecondaryAction); break;
-        // case InputAction.FireTertiary: CurrentCockpit.EndShoot(MyShootActionEnum.TertiaryAction); break;
+        case GameAction.FirePrimary: CurrentCockpit.EndShoot(MyShootActionEnum.PrimaryAction); break;
+        case GameAction.FireSecondary: CurrentCockpit.EndShoot(MyShootActionEnum.SecondaryAction); break;
+        // case GameAction.FireTertiary: CurrentCockpit.EndShoot(MyShootActionEnum.TertiaryAction); break;
       }
     }
 
@@ -224,8 +224,8 @@ namespace AnanaceDev.AnalogGridControl
 
       if (Plugin.ControllerPatched)
       {
-        CurrentCockpit.WheelJump(Input.IsInputActive(InputAction.WheelJump));
-        CurrentCockpit.TryEnableBrakes(Input.IsInputActive(InputAction.Brake));
+        CurrentCockpit.WheelJump(Input.IsInputActive(GameAction.WheelJump));
+        CurrentCockpit.TryEnableBrakes(Input.IsInputActive(GameAction.Brake));
 
         return;
       }
@@ -262,7 +262,7 @@ namespace AnanaceDev.AnalogGridControl
       /*
       if (CurrentCockpit.ControlWheels && CurrentCockpit.GridWheels != null)
       {
-        CurrentCockpit.GridWheels.Brake = Input.IsInputActive(InputAction.Brake);
+        CurrentCockpit.GridWheels.Brake = Input.IsInputActive(GameAction.Brake);
         CurrentCockpit.GridWheels.AngularVelocity += Input.MovementVector;
       }
       */

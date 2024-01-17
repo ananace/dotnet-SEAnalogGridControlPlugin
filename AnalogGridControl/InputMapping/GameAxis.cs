@@ -4,7 +4,7 @@ using AnanaceDev.AnalogGridControl.Util;
 namespace AnanaceDev.AnalogGridControl.InputMapping
 {
 
-  public enum InputAxis
+  public enum GameAxis
   {
     // For HOTAS/pedal usage, single-axis which swaps direction on button press
     [EnumDescription("Strafe Forward", "For HOTAS/Pedal use, toggle between forward/backward with Invert Strafe Forward action")]
@@ -25,11 +25,11 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
     TurnRoll
   }
 
-  public static class InputAxisExtension
+  public static class GameAxisExtension
   {
-    public static string GetHumanReadableName(this InputAxis axis)
+    public static string GetHumanReadableName(this GameAxis axis)
     {
-      MemberInfo[] memInfo = typeof(InputAxis).GetMember(axis.ToString());
+      MemberInfo[] memInfo = typeof(GameAxis).GetMember(axis.ToString());
       if (memInfo != null && memInfo.Length > 0)
       {
         object[] attrs = memInfo[0].GetCustomAttributes(typeof(EnumDescriptionAttribute), false);
@@ -40,9 +40,9 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
       return axis.ToString();
     }
 
-    public static string GetDescription(this InputAxis axis)
+    public static string GetDescription(this GameAxis axis)
     {
-      MemberInfo[] memInfo = typeof(InputAxis).GetMember(axis.ToString());
+      MemberInfo[] memInfo = typeof(GameAxis).GetMember(axis.ToString());
       if (memInfo == null || memInfo.Length == 0)
         return null;
 

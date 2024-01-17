@@ -4,7 +4,7 @@ using AnanaceDev.AnalogGridControl.Util;
 namespace AnanaceDev.AnalogGridControl.InputMapping
 {
 
-  public enum InputAction
+  public enum GameAction
   {
     // Meta actions
     [EnumDescription("Invert Strafe Forward", "Toggle the Strafe Forward bind between being forward/backward")]
@@ -60,17 +60,17 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
     ToolbarActionPrev,
   }
 
-  public static class InputActionExtension
+  public static class GameActionExtension
   {
-    public static string Wordify(this InputAction action)
+    public static string Wordify(this GameAction action)
     {
       var rex = new System.Text.RegularExpressions.Regex("(?<=[a-z])(?<x>[A-Z])|(?<=.)(?<x>[A-Z])(?=[a-z])");
       return rex.Replace(action.ToString() , " ${x}");
     }
 
-    public static string GetHumanReadableName(this InputAction action)
+    public static string GetHumanReadableName(this GameAction action)
     {
-      MemberInfo[] memInfo = typeof(InputAction).GetMember(action.ToString());
+      MemberInfo[] memInfo = typeof(GameAction).GetMember(action.ToString());
       if (memInfo != null && memInfo.Length > 0)
       {
         object[] attrs = memInfo[0].GetCustomAttributes(typeof(EnumDescriptionAttribute), false);
@@ -81,9 +81,9 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
       return action.Wordify();
     }
 
-    public static string GetDescription(this InputAction action)
+    public static string GetDescription(this GameAction action)
     {
-      MemberInfo[] memInfo = typeof(InputAction).GetMember(action.ToString());
+      MemberInfo[] memInfo = typeof(GameAction).GetMember(action.ToString());
       if (memInfo == null || memInfo.Length == 0)
         return null;
 

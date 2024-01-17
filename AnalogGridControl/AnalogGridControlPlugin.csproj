@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- Override in a AnalogGridControlPlugin.csproj.user file -->
+    <!-- Override in AnalogGridControlPlugin.csproj.user file -->
     <SpaceEngineersBin64>/path/to/SteamLibrary/steamapps/common/SpaceEngineers/Bin64</SpaceEngineersBin64>
   </PropertyGroup>
 
