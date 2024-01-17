@@ -1,8 +1,9 @@
 using System;
+using System.Text;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
-// using AnanaceDev.AnalogGridControl.Util;
+using AnanaceDev.AnalogGridControl.Util;
 using SharpDX.DirectInput;
 
 namespace AnanaceDev.AnalogGridControl.InputMapping
@@ -12,6 +13,8 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
   {
     public DeviceAxis? InputAxis { get; set; } = null;
     public int? InputButton { get; set; } = null;
+    public int? InputHat { get; set; } = null;
+    public DeviceHatAxis? InputHatAxis { get; set; } = null;
 
     public GameAxis? MappingAxis { get; set; } = null;
     public bool MappingAxisInvert { get; set; } = false;
@@ -88,6 +91,21 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
       }
       else if (InputButton.HasValue)
         intValue = state.Buttons[InputButton.Value] ? 1 : 0;
+      else if (InputHatAxis.HasValue)
+      {
+        var hat = state.PointOfViewControllers[InputHat ?? 0];
+        var angle = hat / 10000.0f;
+
+        switch (InputHatAxis)
+        {
+          // case DeviceHatAxis.N: intValue = 0; break;
+          // case DeviceHatAxis.E: intValue = 0; break;
+          // case DeviceHatAxis.S: intValue = 0; break;
+          // case DeviceHatAxis.W: intValue = 0; break;
+        }
+
+        MyPluginLog.Debug($"Bind {device.DeviceName} :: Hat{InputHat ?? 0}/{InputHatAxis} ({hat} | {angle}) -> {intValue}");
+      }
 
       if (intValue != null)
       {
@@ -109,6 +127,30 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
       return intValue != null;
     }
 
+    public override string ToString()
+    {
+      var builder = new StringBuilder();
+      if (InputAxis.HasValue)
+        builder.Append(InputAxis.Value);
+      else if (InputButton.HasValue)
+        builder.Append($"B{InputButton.Value}");
+      else if (InputHatAxis.HasValue)
+        builder.Append($"POV{InputHat ?? 0}/{InputHatAxis}");
+      else
+        builder.Append("<Unknown>");
+
+      builder.Append(" -> ");
+
+      if (MappingAxis.HasValue)
+        builder.Append(MappingAxis.Value.GetHumanReadableName());
+      else if (MappingAction.HasValue)
+        builder.Append(MappingAction.Value.GetHumanReadableName());
+      else
+        builder.Append("<Unknown>");
+
+      return builder.ToString();
+    }
+
 #region XML Serialization
     public void WriteXml(XmlWriter writer)
     {
@@ -116,6 +158,12 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
         writer.WriteAttributeString("Axis", InputAxis.Value.ToString());
       else if (InputButton.HasValue)
         writer.WriteAttributeString("Button", InputButton.Value.ToString());
+      else if (InputHatAxis.HasValue)
+      {
+        if (InputHat.HasValue)
+          writer.WriteAttributeString("Hat", InputHat.Value.ToString());
+        writer.WriteAttributeString("HatAxis", InputHatAxis.Value.ToString());
+      }
 
       if (MappingAxis.HasValue)
       {
@@ -140,6 +188,12 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
         InputAxis = (DeviceAxis)Enum.Parse(typeof(DeviceAxis), axis);
       else if (reader.GetAttribute("Button") is string button)
         InputButton = int.Parse(button);
+      else if (reader.GetAttribute("HatAxis") is string hatAxis)
+      {
+        InputHatAxis = (DeviceHatAxis)Enum.Parse(typeof(DeviceHatAxis), hatAxis);
+        if (reader.GetAttribute("Hat") is string hat)
+          InputHat = int.Parse(hat);
+      }
 
       if (reader.GetAttribute("OutputAxis") is string outputAxis)
       {

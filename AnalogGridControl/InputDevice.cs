@@ -5,6 +5,7 @@ using System.Xml.Serialization;
 using SharpDX.DirectInput;
 using AnanaceDev.AnalogGridControl.Util;
 using System.Linq;
+using System.Text;
 
 namespace AnanaceDev.AnalogGridControl
 {
@@ -129,6 +130,14 @@ namespace AnanaceDev.AnalogGridControl
 
       foreach (var bind in Binds)
         bind.Apply(CurrentState, this);
+    }
+
+    public override string ToString()
+    {
+      var str = new StringBuilder($"{DeviceName} - {Binds.Count} Binds");
+      if (!IsValid)
+        str.Append(" - Not available");
+      return str.ToString();
     }
   }
 }

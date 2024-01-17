@@ -33,6 +33,10 @@
       <Private>false</Private>
       <HintPath>$(SpaceEngineersBin64)/Sandbox.Game.dll</HintPath>
     </Reference>
+    <Reference Include="Sandbox.Graphics">
+      <Private>false</Private>
+      <HintPath>$(SpaceEngineersBin64)/Sandbox.Graphics.dll</HintPath>
+    </Reference>
     <Reference Include="SharpDX">
       <Private>false</Private>
       <HintPath>$(SpaceEngineersBin64)/SharpDX.dll</HintPath>
