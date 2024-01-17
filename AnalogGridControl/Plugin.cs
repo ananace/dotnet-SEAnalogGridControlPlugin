@@ -94,6 +94,10 @@ namespace AnanaceDev.AnalogGridControl
             InputRegistry = (InputRegistry)xmlSerializer.Deserialize(streamReader);
 
           MyPluginLog.Info($"Read mappings for {InputRegistry.Devices.Count} devices.");
+          foreach (var dev in InputRegistry.Devices)
+          {
+            MyPluginLog.Info($"  {dev.DeviceName} - {dev.Binds.Count} binds.");
+          }
           return;
         }
       }

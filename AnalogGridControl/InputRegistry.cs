@@ -16,7 +16,7 @@ namespace AnanaceDev.AnalogGridControl
 
     public ushort InputThrottleMultiplayer { get; set; } = 1;
     [XmlIgnore]
-    public bool InputThrottleMultiplayerSpecified => InputThrottleMultiplayer != 1;
+    public bool InputThrottleMultiplayerSpecified => InputThrottleMultiplayer <= 1;
 
 
     public bool HasDevice(DeviceInstance device)

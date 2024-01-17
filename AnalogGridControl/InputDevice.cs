@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Xml.Serialization;
 using SharpDX.DirectInput;
 using AnanaceDev.AnalogGridControl.Util;
+using System.Linq;
 
 namespace AnanaceDev.AnalogGridControl
 {
@@ -67,27 +68,27 @@ namespace AnanaceDev.AnalogGridControl
       {
         Joystick.Properties.AxisMode = DeviceAxisMode.Absolute;
 
+        // Acquire device capabilities
         try {
-          var devImage = Joystick.GetDeviceImages();
+          var cap = Joystick.Capabilities;
 
-          Buttons = devImage.ButtonCount;
-          POVHats = devImage.PovCount;
+          Buttons = cap.ButtonCount;
+          POVHats = cap.PovCount;
         } catch {}
 
-        foreach (var axis in Joystick.GetObjects())
+        // Grab input ranges for handled axes
+        foreach (var axis in Enum.GetValues(typeof(DeviceAxis)))
         {
           try {
-            var props = Joystick.GetObjectPropertiesById(axis.ObjectId);
+            var obj = Joystick.GetObjectInfoByOffset((int)axis);
+            var props = Joystick.GetObjectPropertiesById(obj.ObjectId);
             var range = props.Range;
 
-            if (Enum.IsDefined(typeof(DeviceAxis), axis.Offset))
-              _Ranges[(DeviceAxis)axis.Offset] = range;
+            _Ranges[(DeviceAxis)axis] = range;
           } catch {}
         }
 
-        MyPluginLog.Debug($"{instance.InstanceName} - Retrieved {_Ranges.Count} ranges as;");
-        foreach (var range in _Ranges)
-          MyPluginLog.Debug($"  - {range.Key} => {range.Value.Minimum}-{range.Value.Maximum}");
+        MyPluginLog.Debug($"{instance.InstanceName} - Has {Buttons} button(s), {POVHats} hat(s), and {Axes.Count()} axis(es); {string.Join(", ", Axes.Select((a) => a.ToString()))}");
       }
       else
       {

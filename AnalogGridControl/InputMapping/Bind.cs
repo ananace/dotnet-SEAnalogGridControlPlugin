@@ -2,6 +2,7 @@ using System;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
+using AnanaceDev.AnalogGridControl.Util;
 using SharpDX.DirectInput;
 
 namespace AnanaceDev.AnalogGridControl.InputMapping
@@ -53,7 +54,7 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
 
         var range = device.GetRange(InputAxis.Value);
 
-        floatValue = ((float)intValue / (float)range.Maximum);
+        floatValue = (float)((double)intValue / (double)range.Maximum);
         if (MappingAxisInvert)
           floatValue = 1.0f - floatValue;
 
@@ -67,7 +68,22 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
         if (Curve != 0.0f)
         {
           var curve = Math.Max(0.0f, Math.Min(1.0f, Curve));
+          var before = floatValue.Value;
+
+          // Remap both halves of input so that the curve applies properly
+          bool? positive = null;
+          if (MappingAxis != InputMapping.InputAxis.StrafeForward)
+          {
+            positive = floatValue.Value >= 0.5f;
+            floatValue = floatValue.Value < 0.5f ? (0.5f - floatValue) * 2 : (floatValue - 0.5f) * 2;
+          }
+
           floatValue = curve * (float)Math.Pow(floatValue.Value, 3) + (1 - curve) * floatValue.Value;
+
+          if (positive.HasValue)
+            floatValue = positive.Value ? floatValue * 0.5f + 0.5f : 0.5f - floatValue * 0.5f;
+
+          MyPluginLog.Debug($"Bind {device.DeviceName} :: {InputAxis}->{MappingAxis} applying curve {curve}: {before} -> {floatValue}");
         }
       }
       else if (InputButton.HasValue)
@@ -84,9 +100,9 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
 
         /*
         if (MappingAxis.HasValue)
-          MyPluginLog.Debug($"InputMapping {InputAxis}->{MappingAxis} (inv? {MappingAxisInvert}) => {newValue} -> {Value}");
+          MyPluginLog.Debug($"InputMapping {InputAxis}->{MappingAxis} (inv? {MappingAxisInvert}) => {intValue} -> {Value}");
         else
-          MyPluginLog.Debug($"InputMapping {InputButton}->{MappingAction} => {newValue} -> {Value} ({IsActive})");
+          MyPluginLog.Debug($"InputMapping {InputButton}->{MappingAction} => {intValue} -> {Value} ({IsActive})");
         */
       }
 
@@ -141,7 +157,7 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
       if (reader.GetAttribute("Curve") is string curve)
         Curve = float.Parse(curve);
 
-      reader.ReadToNextSibling("Bind");
+      reader.Skip();
     }
 
     public XmlSchema GetSchema()

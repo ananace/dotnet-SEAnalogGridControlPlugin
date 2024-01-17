@@ -51,6 +51,7 @@ namespace AnanaceDev.AnalogGridControl
 
     public void RegisterInput(InputDevice device)
     {
+      MyPluginLog.Debug($"InputAggregate - Registering {device.DeviceName}");
       _Inputs.Add(device);
     }
 
@@ -61,8 +62,12 @@ namespace AnanaceDev.AnalogGridControl
       foreach (var device in _Inputs)
       {
         if (!device.IsValid || !device.IsAcquired || !device.HasBinds)
+        {
+          // MyPluginLog.Debug($"InputAggregate - Skipping {device.DeviceName}");
           continue;
+        }
 
+        // MyPluginLog.Debug($"InputAggregate - Updating {device.DeviceName}");
         device.Update();
 
         foreach (var mapping in device.Binds)

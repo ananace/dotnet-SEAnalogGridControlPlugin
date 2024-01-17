@@ -73,8 +73,11 @@ namespace AnanaceDev.AnalogGridControl
         UpdateCurrentControlUnit(null, CurrentPlayer.Controller.ControlledEntity);
       }
 
-      if (!Session.IsServer && CurrentTick % Plugin.InputThrottleMultiplayer != 0)
+      if (!Session.IsServer && Plugin.InputRegistry.InputThrottleMultiplayerSpecified && (CurrentTick % Plugin.InputThrottleMultiplayer) != 0)
+      {
+        // MyPluginLog.Debug($"Skipping tick {CurrentTick} due to throttling.");
         return;
+      }
 
       Input.UpdateInputs();
 
@@ -152,6 +155,10 @@ namespace AnanaceDev.AnalogGridControl
           if (CurrentCockpit.IsTargetLockingEnabled())
             CurrentCockpit.Pilot.TargetFocusComp.OnLockRequest();
           break;
+        case InputAction.ReleaseTarget:
+          if (CurrentCockpit.IsTargetLockingEnabled())
+            CurrentCockpit.Pilot.TargetLockingComp.ReleaseTargetLockRequest();
+          break;
 
         case InputAction.ToolbarAction1: CurrentCockpit.Toolbar.ActivateItemAtSlot(0); break;
         case InputAction.ToolbarAction2: CurrentCockpit.Toolbar.ActivateItemAtSlot(1); break;
@@ -185,7 +192,7 @@ namespace AnanaceDev.AnalogGridControl
       {
         case InputAction.FirePrimary: CurrentCockpit.BeginShoot(MyShootActionEnum.PrimaryAction); break;
         case InputAction.FireSecondary: CurrentCockpit.BeginShoot(MyShootActionEnum.SecondaryAction); break;
-        case InputAction.FireTertiary: CurrentCockpit.BeginShoot(MyShootActionEnum.TertiaryAction); break;
+        // case InputAction.FireTertiary: CurrentCockpit.BeginShoot(MyShootActionEnum.TertiaryAction); break;
       }
     }
 
@@ -202,7 +209,7 @@ namespace AnanaceDev.AnalogGridControl
       {
         case InputAction.FirePrimary: CurrentCockpit.EndShoot(MyShootActionEnum.PrimaryAction); break;
         case InputAction.FireSecondary: CurrentCockpit.EndShoot(MyShootActionEnum.SecondaryAction); break;
-        case InputAction.FireTertiary: CurrentCockpit.EndShoot(MyShootActionEnum.TertiaryAction); break;
+        // case InputAction.FireTertiary: CurrentCockpit.EndShoot(MyShootActionEnum.TertiaryAction); break;
       }
     }
 

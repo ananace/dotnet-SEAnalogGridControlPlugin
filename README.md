@@ -17,13 +17,13 @@ To Do;
   - [X] Wheels
   - [X] Semi-functional fallback without Harmony patch (no support for wheels)
 - [X] Per-device mappings
-  - [ ] POV hats (Handled like buttons?)
+- [ ] POV hats (Handled like buttons?)
 - [X] HOTAS/Wheel support
   - [X] Forward/Backwards strafe toggle
-  - [ ] Hold-style backwards strafe bind - to support reverse gear on wheel+gearbox
+  - [X] Hold-style backwards strafe bind - to support reverse gear on wheel+gearbox
 - [ ] More bindable actions
-  - [ ] Targeting
-  - [ ] Reloading
+  - [X] Targeting
+  - [ ] ...
 - [ ] Ensure multiplayer works
 - [ ] Configuration UI
 - [ ] Exception handling _everywhere_
