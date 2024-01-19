@@ -15,6 +15,7 @@ To Do;
   - [X] Thrusters
   - [X] Gyros
   - [X] Wheels
+    - [ ] Brakes (only digital input for now)
   - [X] Semi-functional fallback without Harmony patch (no support for wheels)
 - [X] Per-device mappings
 - [X] POV hats
@@ -24,8 +25,6 @@ To Do;
 - [ ] More bindable actions
   - [X] Targeting
   - [ ] Stepped toolbar action selection without activating.
-        (Will require another patch)
-  - [ ] Analog brakes for wheels.
         (Will require another patch)
   - [ ] ...
 - [ ] Handle devices (re)appearing during gameplay.
