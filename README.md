@@ -30,6 +30,9 @@ To Do;
 - [ ] Handle devices (re)appearing during gameplay.
       (Currently requires a game restart)
 - [ ] Ensure multiplayer works
+- [ ] Gamepad interoperability(?)
+- [ ] Support FPS input binds as well(?)
+      (Should these be separate binds, or unified?)
 - [X] Configuration UI
   - [ ] Reordering of binds(?)
 - [ ] Exception handling _everywhere_
