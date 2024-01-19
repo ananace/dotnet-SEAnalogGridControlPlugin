@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Xml.Serialization;
 using AnanaceDev.AnalogGridControl.Util;
 using HarmonyLib;
@@ -145,7 +146,7 @@ namespace AnanaceDev.AnalogGridControl
         MyPluginLog.Info("Applying patches...");
 
         Harmony harmony = new Harmony("AnanaceDev.AnalogGridControl");
-        harmony.PatchAll();
+        harmony.PatchAll(Assembly.GetExecutingAssembly());
 
         MyPluginLog.Info("Patches applied.");
 
