@@ -62,9 +62,17 @@ namespace AnanaceDev.AnalogGridControl
       MyPluginLog.Info("Saving configuration...");
       var configPath = Path.Combine(MyFileSystem.UserDataPath, "Storage", ConfigFileName);
 
-      Directory.CreateDirectory(System.IO.Path.GetDirectoryName(configPath));
-      using (var text = File.CreateText(configPath))
-        new XmlSerializer(typeof(InputRegistry)).Serialize(text, InputRegistry);
+      try
+      {
+        Directory.CreateDirectory(System.IO.Path.GetDirectoryName(configPath));
+
+        using (var text = File.CreateText(configPath))
+          new XmlSerializer(typeof(InputRegistry)).Serialize(text, InputRegistry);
+      }
+      catch (Exception ex)
+      {
+        MyPluginLog.Warning($"Failed to save the configuration file: {configPath} - {ex}");
+      }
     }
 
     void ReadDevices()

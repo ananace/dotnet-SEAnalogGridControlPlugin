@@ -1,3 +1,4 @@
+using System;
 using System.Reflection;
 using AnanaceDev.AnalogGridControl.Util;
 
@@ -7,57 +8,59 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
   public enum GameAction
   {
     // Meta actions
+    None = 0,
+
     [EnumDescription("Invert Strafe Forward", "Toggle the Strafe Forward bind between being forward/backward,\nworks as both a toggle and a hold")]
-    InvertStrafeForward,
+    InvertStrafeForward = 1 << 0,
     [EnumDescription("Toggle Analog Input Active", "Toggle if analog input should be applied to the currently piloted grid,\ndefault can be chosen in the main settings")]
-    SwitchAnalogInputActive,
+    SwitchAnalogInputActive = 1 << 1,
 
     // Grid actions
     [EnumDescription("Primary Fire")]
-    FirePrimary,
+    FirePrimary = 1 << 2,
     [EnumDescription("Secondary Fire")]
-    FireSecondary,
+    FireSecondary = 1 << 3,
 
     [EnumDescription("Lock Target")]
-    Target,
+    Target = 1 << 4,
     [EnumDescription("Release Target")]
-    ReleaseTarget,
+    ReleaseTarget = 1 << 5,
     [EnumDescription("Jump (Wheels)")]
-    WheelJump,
+    WheelJump = 1 << 6,
     [EnumDescription("Brake (Wheels)")]
-    Brake,
+    Brake = 1 << 7,
 
     [EnumDescription("Toggle Lights")]
-    SwitchLights,
+    SwitchLights = 1 << 8,
     [EnumDescription("Toggle Dampeners")]
-    SwitchDamping,
+    SwitchDamping = 1 << 9,
     [EnumDescription("Toggle Handbrake")]
-    SwitchHandbrake,
+    SwitchHandbrake = 1 << 10,
     [EnumDescription("Toggle Power")]
-    SwitchReactors,
+    SwitchReactors = 1 << 11,
     [EnumDescription("Toggle Parking")]
-    SwitchLandingGears,
+    SwitchLandingGears = 1 << 12,
 
-    ToolbarAction1,
-    ToolbarAction2,
-    ToolbarAction3,
-    ToolbarAction4,
-    ToolbarAction5,
-    ToolbarAction6,
-    ToolbarAction7,
-    ToolbarAction8,
-    ToolbarAction9,
+    ToolbarAction1 = 1 << 13,
+    ToolbarAction2 = 1 << 14,
+    ToolbarAction3 = 1 << 15,
+    ToolbarAction4 = 1 << 16,
+    ToolbarAction5 = 1 << 17,
+    ToolbarAction6 = 1 << 18,
+    ToolbarAction7 = 1 << 19,
+    ToolbarAction8 = 1 << 20,
+    ToolbarAction9 = 1 << 21,
     [EnumDescription("Empty Hands")]
-    ToolbarActionHolster,
+    ToolbarActionHolster = 1 << 22,
 
     [EnumDescription("Next Toolbar")]
-    ToolbarSwitchNext,
+    ToolbarSwitchNext = 1 << 23,
     [EnumDescription("Previous Toolbar")]
-    ToolbarSwitchPrev,
+    ToolbarSwitchPrev = 1 << 24,
     [EnumDescription("Next Toolbar Action", "Nota Bene; This will currently both switch the highlighted action as well as trigger it")]
-    ToolbarActionNext,
+    ToolbarActionNext = 1 << 25,
     [EnumDescription("Previous Toolbar Action", "Nota Bene; This will currently both switch the highlighted action as well as trigger it")]
-    ToolbarActionPrev,
+    ToolbarActionPrev = 1 << 26,
   }
 
   public static class GameActionExtension

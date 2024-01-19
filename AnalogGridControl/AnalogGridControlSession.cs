@@ -55,7 +55,8 @@ namespace AnanaceDev.AnalogGridControl
 
     protected override void UnloadData()
     {
-      Session.Player.Controller.ControlledEntityChanged -= UpdateCurrentControlUnit;
+      if (CurrentPlayer != null)
+        CurrentPlayer.Controller.ControlledEntityChanged -= UpdateCurrentControlUnit;
       Instance = null;
     }
 

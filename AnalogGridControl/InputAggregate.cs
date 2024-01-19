@@ -30,11 +30,11 @@ namespace AnanaceDev.AnalogGridControl
     /// Is the input currently active
     public bool IsInputActive(GameAction action)
     {
-      return (_Actions.ContainsKey(action) && _Actions[action]);
+      return _Actions.HasFlag(action);
     }
     public bool WasInputActive(GameAction action)
     {
-      return (_LastActions.ContainsKey(action) && _LastActions[action]);
+      return _LastActions.HasFlag(action);
     }
 
     float ForwardMult = -1;
@@ -49,8 +49,8 @@ namespace AnanaceDev.AnalogGridControl
     public DirectInput DInput { get; set; }
     List<InputDevice> _Inputs = new List<InputDevice>();
 
-    Dictionary<GameAction, bool> _LastActions = new Dictionary<GameAction, bool>();
-    Dictionary<GameAction, bool> _Actions = new Dictionary<GameAction, bool>();
+    GameAction _LastActions = GameAction.None;
+    GameAction _Actions = GameAction.None;
 
     public IReadOnlyList<InputDevice> Devices => _Inputs;
 
@@ -69,26 +69,30 @@ namespace AnanaceDev.AnalogGridControl
         device.Binds
           .Where(b => b.IsActionMapping && b.IsActive)
           .ForEach(b => {
-            _Actions[b.MappingAction.Value] = false;
+            _Actions &= ~b.MappingAction.Value;
           });
       };
     }
 
     public void UpdateInputs()
     {
-      _LastActions = new Dictionary<GameAction, bool>(_Actions);
-      _Actions.Clear();
+      _LastActions = _Actions;
+      _Actions = GameAction.None;
+
       foreach (var device in _Inputs)
       {
         if (!device.IsValid || !device.IsAcquired || !device.HasBinds)
         {
-          // MyPluginLog.Debug($"InputAggregate - Skipping {device.DeviceName}");
+          // MyPluginLog.Debug($"InputAggregate - Skipping {device.DeviceName} !({device.IsValid} && {device.IsAcquired} && {device.HasBinds})");
           continue;
         }
 
         // MyPluginLog.Debug($"InputAggregate - Updating {device.DeviceName}");
         if (!device.Update())
+        {
+          // MyPluginLog.Debug($"InputAggregate - Skipping {device.DeviceName} updates due to no new data");
           continue;
+        }
 
         foreach (var mapping in device.Binds)
         {
@@ -112,20 +116,23 @@ namespace AnanaceDev.AnalogGridControl
           if (mapping.IsActionMapping)
           {
             bool value = mapping.IsActive;
-            _Actions[mapping.MappingAction.Value] = value;
+
+            if (value)
+              _Actions |= mapping.MappingAction.Value;
           }
         }
       }
 
+
       foreach (var action in System.Enum.GetValues(typeof(GameAction)).Cast<GameAction>())
       {
-        if (IsInputActive(action) && !WasInputActive(action))
+        if (IsInputJustActivated(action))
         {
           MyPluginLog.Debug($"StartActive {action}");
           ActionTriggered?.Invoke(this, action);
           ActionBegin?.Invoke(this, action);
         }
-        if (!IsInputActive(action) && WasInputActive(action))
+        if (IsInputJustDeactivated(action))
         {
           MyPluginLog.Debug($"StopActive {action}");
           ActionEnd?.Invoke(this, action);

@@ -20,16 +20,18 @@ namespace AnanaceDev.AnalogGridControl
     public List<Bind> Binds { get; private set; } = new List<Bind>();
 
     [XmlIgnore]
-    public DirectInput DInput { get; private set; }
+    public DirectInput DInput { get; private set; } = null;
     [XmlIgnore]
-    public DeviceInstance Device { get; private set; }
+    public DeviceInstance Device { get; private set; } = null;
     [XmlIgnore]
-    public Joystick Joystick { get; private set; }
+    public Joystick Joystick { get; private set; } = null;
+    [XmlIgnore]
+    public bool IsInitialized { get; private set; } = false;
 
     Dictionary<DeviceAxis, InputRange> _Ranges = new Dictionary<DeviceAxis, InputRange>();
 
     [XmlIgnore]
-    public bool IsValid => DInput != null && Device != null && Joystick != null;
+    public bool IsValid => DInput != null && Device != null && Joystick != null && IsInitialized;
     [XmlIgnore]
     public bool IsAcquired { get; private set; } = false;
     [XmlIgnore]
@@ -69,6 +71,7 @@ namespace AnanaceDev.AnalogGridControl
       DInput = dinput;
       Device = instance;
       Joystick = new Joystick(dinput, instance.InstanceGuid);
+      IsInitialized = true;
 
       DeviceName = instance.InstanceName;
       DeviceUUID = instance.InstanceGuid;
@@ -97,11 +100,11 @@ namespace AnanaceDev.AnalogGridControl
           } catch {}
         }
 
-        MyPluginLog.Debug($"{instance.InstanceName} - Has {Buttons} button(s), {POVHats} hat(s), and {Axes.Count()} axis(es); {string.Join(", ", Axes.Select((a) => a.ToString()))}");
+        MyPluginLog.Debug($"{DeviceName} - Has {Buttons} button(s), {POVHats} hat(s), and {Axes.Count()} axis(es); {string.Join(", ", Axes.Select((a) => a.ToString()))}");
       }
       else
       {
-        MyPluginLog.Warning($"{instance.InstanceName} - Failed to retrieve joystick object.");
+        MyPluginLog.Warning($"{DeviceName} - Failed to retrieve joystick object.");
       }
     }
 
@@ -113,14 +116,14 @@ namespace AnanaceDev.AnalogGridControl
       if (IsValid)
       {
         Joystick.Acquire();
-        CurrentState = Joystick.GetCurrentState();
+        LastState = CurrentState = Joystick.GetCurrentState();
         IsAcquired = true;
-        MyPluginLog.Info($"{Device.InstanceName} - Acquired");
+        MyPluginLog.Info($"{DeviceName} - Acquired");
 
         OnAcquired?.Invoke(this);
       }
       else
-        MyPluginLog.Info($"{Device.InstanceName} - Acquire failed");
+        MyPluginLog.Info($"{DeviceName} - Acquire failed");
     }
 
     public void Unaquire()
@@ -132,7 +135,7 @@ namespace AnanaceDev.AnalogGridControl
       {
         try { Joystick.Unacquire(); } catch {}
         IsAcquired = false;
-        MyPluginLog.Info($"{Device.InstanceName} - Unacquired");
+        MyPluginLog.Info($"{DeviceName} - Unacquired");
 
         OnUnacquired?.Invoke(this);
       }
