@@ -53,6 +53,20 @@ namespace AnanaceDev.AnalogGridControl
     {
       MyPluginLog.Debug($"InputAggregate - Registering {device.DeviceName}");
       _Inputs.Add(device);
+
+      device.OnUnacquired += (_) => {
+        // Clear input vectors in case they were fed by the lost device,
+        // they will be rebuilt the next tick if another device feeds them
+        MovementVector = Vector3.Zero;
+        RotationVector = Vector3.Zero;
+
+        // Stop all currently active action binds fed by the device
+        device.Binds
+          .Where(b => b.IsActionMapping && b.IsActive)
+          .ForEach(b => {
+            _Actions[b.MappingAction.Value] = false;
+          });
+      };
     }
 
     public void UpdateInputs()
@@ -68,7 +82,8 @@ namespace AnanaceDev.AnalogGridControl
         }
 
         // MyPluginLog.Debug($"InputAggregate - Updating {device.DeviceName}");
-        device.Update();
+        if (!device.Update())
+          continue;
 
         foreach (var mapping in device.Binds)
         {

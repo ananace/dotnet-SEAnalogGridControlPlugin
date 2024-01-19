@@ -105,9 +105,10 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
           Value = intValue.Value;
 
         IsActive = Value >= 0.75f;
+        return true;
       }
 
-      return intValue != null;
+      return false;
     }
 
     public override string ToString()

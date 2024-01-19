@@ -57,6 +57,9 @@ namespace AnanaceDev.AnalogGridControl
     [XmlIgnore]
     public JoystickState LastState { get; private set; }
 
+    public event Action<InputDevice> OnAcquired;
+    public event Action<InputDevice> OnUnacquired;
+
     bool _IsDisposed = false;
 
     public void Init(DirectInput dinput, DeviceInstance instance)
@@ -113,6 +116,8 @@ namespace AnanaceDev.AnalogGridControl
         LastState = CurrentState = Joystick.GetCurrentState();
         IsAcquired = true;
         MyPluginLog.Info($"{Device.InstanceName} - Acquired");
+
+        OnAcquired?.Invoke(this);
       }
       else
         MyPluginLog.Info($"{Device.InstanceName} - Acquire failed");
@@ -128,6 +133,8 @@ namespace AnanaceDev.AnalogGridControl
         try { Joystick.Unacquire(); } catch {}
         IsAcquired = false;
         MyPluginLog.Info($"{Device.InstanceName} - Unacquired");
+
+        OnUnacquired?.Invoke(this);
       }
 
       Binds.ForEach(bind => bind.Reset());
@@ -155,20 +162,23 @@ namespace AnanaceDev.AnalogGridControl
       return DefaultRange;
     }
 
-    public void Update(bool runBinds = true)
+    public bool Update(bool runBinds = true)
     {
       if (!IsValid || !IsAcquired)
-        return;
+        return false;
 
       try
       {
         LastState = CurrentState;
         CurrentState = Joystick.GetCurrentState();
         if (!runBinds)
-          return;
+          return false;
 
+        bool hasData = false;
         foreach (var bind in Binds)
-          bind.Apply(CurrentState, this);
+          if (bind.Apply(CurrentState, this))
+            hasData = true;
+        return hasData;
       }
       catch (Exception ex)
       {
@@ -176,6 +186,8 @@ namespace AnanaceDev.AnalogGridControl
 
         Unaquire();
       }
+
+      return false;
     }
 
     public Bind DetectBind()

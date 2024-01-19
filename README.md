@@ -26,7 +26,8 @@ To Do;
   - [ ] Stepped toolbar action selection without activating.
         (Will require another patch)
   - [ ] ...
-- [ ] Handle devices (re)appearing during gameplay
+- [ ] Handle devices (re)appearing during gameplay.
+      (Currently requires a game restart)
 - [ ] Ensure multiplayer works
 - [X] Configuration UI
 - [ ] Exception handling _everywhere_
