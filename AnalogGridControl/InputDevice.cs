@@ -10,7 +10,7 @@ using System.Text;
 namespace AnanaceDev.AnalogGridControl
 {
   [XmlType("Joystick")]
-  public class InputDevice
+  public class InputDevice : IDisposable
   {
     [XmlAttribute("Name")]
     public string DeviceName { get; set; }
@@ -44,15 +44,20 @@ namespace AnanaceDev.AnalogGridControl
 
     [XmlIgnore]
     public IEnumerable<DeviceAxis> Axes => _Ranges.Keys;
+    public static IEnumerable<DeviceAxis> MaxAxes => Enum.GetValues(typeof(DeviceAxis)).Cast<DeviceAxis>();
     [XmlIgnore]
     public int Buttons { get; private set; } = -1;
+    public static int MaxButtons => 128;
     [XmlIgnore]
     public int POVHats { get; private set; } = -1;
+    public static int MaxPOVHats => 4;
 
     [XmlIgnore]
     public JoystickState CurrentState { get; private set; }
     [XmlIgnore]
     public JoystickState LastState { get; private set; }
+
+    bool _IsDisposed = false;
 
     public void Init(DirectInput dinput, DeviceInstance instance)
     {
@@ -113,6 +118,21 @@ namespace AnanaceDev.AnalogGridControl
         MyPluginLog.Debug($"{Device.InstanceName} - Acquire failed");
     }
 
+    public void Dispose()
+    {
+      if (_IsDisposed)
+        return;
+
+      _IsDisposed = true;
+      if (Joystick != null)
+        Joystick.Dispose();
+    }
+
+    public void CleanupBinds()
+    {
+      Binds.RemoveAll(bind => !bind.IsValid);
+    }
+
     public InputRange GetRange(DeviceAxis axis)
     {
       if (_Ranges.ContainsKey(axis))
@@ -120,16 +140,43 @@ namespace AnanaceDev.AnalogGridControl
       return DefaultRange;
     }
 
-    public void Update()
+    public void Update(bool runBinds = true)
     {
       if (!IsValid || !IsAcquired)
         return;
 
       LastState = CurrentState;
       CurrentState = Joystick.GetCurrentState();
+      if (!runBinds)
+        return;
 
       foreach (var bind in Binds)
         bind.Apply(CurrentState, this);
+    }
+
+    public Bind DetectBind()
+    {
+      Update(false);
+
+      for (int i = 0; i < Buttons; ++i)
+        if (CurrentState.Buttons[i] && !LastState.Buttons[i])
+          return new Bind() { InputButton = i };
+
+      foreach (var axis in Axes)
+      {
+        var curVal = CurrentState.GetAxisValueNormalized(axis, GetRange(axis));
+        var oldVal = LastState.GetAxisValueNormalized(axis, GetRange(axis));
+
+        if ((curVal < 0.25f && oldVal > 0.25f) || (curVal > 0.75f && oldVal < 0.75f))
+          return new Bind() { InputAxis = axis };
+      }
+
+      for (int i = 0; i < POVHats; ++i)
+        foreach (var axis in Enum.GetValues(typeof(DeviceHatAxis)).Cast<DeviceHatAxis>())
+          if (CurrentState.GetPOVAxis(axis, i) && !LastState.GetPOVAxis(axis, i))
+            return new Bind() { InputHatAxis = axis, InputHat = i };
+
+      return null;
     }
 
     public override string ToString()

@@ -12,7 +12,7 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
 
     [EnumDescription("Strafe Forward/Backward")]
     StrafeForwardBackward,
-    [EnumDescription("Strafe Left/Right")]
+    [EnumDescription("Strafe Left/Right", "This also handles turning on wheeled vehicles.")]
     StrafeLeftRight,
     [EnumDescription("Strafe Up/Down")]
     StrafeUpDown,
@@ -50,7 +50,7 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
       if (attrs == null || attrs.Length == 0)
         return null;
 
-      return ((EnumDescriptionAttribute)attrs[0]).Name;
+      return ((EnumDescriptionAttribute)attrs[0]).Description;
     }
   }
 

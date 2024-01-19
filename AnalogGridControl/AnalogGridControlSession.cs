@@ -74,10 +74,7 @@ namespace AnanaceDev.AnalogGridControl
       }
 
       if (!Session.IsServer && Plugin.InputRegistry.InputThrottleMultiplayerSpecified && (CurrentTick % Plugin.InputThrottleMultiplayer) != 0)
-      {
-        // MyPluginLog.Debug($"Skipping tick {CurrentTick} due to throttling.");
         return;
-      }
 
       Input.UpdateInputs();
 
@@ -100,7 +97,7 @@ namespace AnanaceDev.AnalogGridControl
         if (Input != null)
         {
           Input.IsAnalogInputActive = Plugin.InputActiveByDefault;
-          MyPluginLog.Debug($"Attached to grid, analog input active: {Input.IsAnalogInputActive}");
+          MyPluginLog.Debug($"Attached to new grid, analog input active: {Input.IsAnalogInputActive}");
         }
       }
       else if (CurrentControllable == null && oldControllable != null)

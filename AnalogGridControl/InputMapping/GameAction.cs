@@ -7,9 +7,9 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
   public enum GameAction
   {
     // Meta actions
-    [EnumDescription("Invert Strafe Forward", "Toggle the Strafe Forward bind between being forward/backward")]
+    [EnumDescription("Invert Strafe Forward", "Toggle the Strafe Forward bind between being forward/backward,\nworks as both a toggle and a hold")]
     InvertStrafeForward,
-    [EnumDescription("Toggle Analog Input Active")]
+    [EnumDescription("Toggle Analog Input Active", "Toggle if analog input should be applied to the currently piloted grid,\ndefault can be chosen in the main settings")]
     SwitchAnalogInputActive,
 
     // Grid actions
@@ -54,9 +54,9 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
     ToolbarSwitchNext,
     [EnumDescription("Previous Toolbar")]
     ToolbarSwitchPrev,
-    [EnumDescription("Next Toolbar Action")]
+    [EnumDescription("Next Toolbar Action", "Nota Bene; This will currently both switch the highlighted action as well as trigger it")]
     ToolbarActionNext,
-    [EnumDescription("Previous Toolbar Action")]
+    [EnumDescription("Previous Toolbar Action", "Nota Bene; This will currently both switch the highlighted action as well as trigger it")]
     ToolbarActionPrev,
   }
 
@@ -64,7 +64,7 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
   {
     public static string Wordify(this GameAction action)
     {
-      var rex = new System.Text.RegularExpressions.Regex("(?<=[a-z])(?<x>[A-Z])|(?<=.)(?<x>[A-Z])(?=[a-z])");
+      var rex = new System.Text.RegularExpressions.Regex("(?<=[a-z])(?<x>[A-Z0-9])|(?<=.)(?<x>[A-Z0-9])(?=[a-z])");
       return rex.Replace(action.ToString() , " ${x}");
     }
 
@@ -91,7 +91,7 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
       if (attrs == null || attrs.Length == 0)
         return null;
 
-      return ((EnumDescriptionAttribute)attrs[0]).Name;
+      return ((EnumDescriptionAttribute)attrs[0]).Description;
     }
   }
 

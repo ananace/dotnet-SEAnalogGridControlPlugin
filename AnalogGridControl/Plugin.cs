@@ -11,7 +11,7 @@ using VRage.Plugins;
 namespace AnanaceDev.AnalogGridControl
 {
 
-  class Plugin : IPlugin
+  class Plugin : IPlugin, IDisposable
   {
     public const string Name = "AnalogGridControl";
     private static readonly string ConfigFileName = $"{Name}.cfg";
@@ -23,6 +23,8 @@ namespace AnanaceDev.AnalogGridControl
     public static InputRegistry InputRegistry = new InputRegistry();
     public static DirectInput DInput;
 
+    bool _IsDisposed = false;
+
     public void Init(object _gameObject)
     {
       AttemptPatches();
@@ -32,11 +34,31 @@ namespace AnanaceDev.AnalogGridControl
       ReadDevices();
     }
     public void Update() {}
-    public void Dispose() {}
+    public void Dispose()
+    {
+      if (_IsDisposed)
+        return;
+
+      _IsDisposed = true;
+      InputRegistry.Dispose();
+      if (DInput != null)
+        DInput.Dispose();
+    }
+
+    public void OpenConfigDialog()
+    {
+      var settings = new GUI.SettingsDialog();
+      settings.Closed += (_1, _2) => SaveMappings();
+
+      Sandbox.Graphics.GUI.MyGuiSandbox.AddScreen(settings);
+    }
 
     public static void SaveMappings()
     {
-      MyPluginLog.Info("Saving mappings...");
+      // Remove empty binds before saving
+      InputRegistry.Cleanup();
+
+      MyPluginLog.Info("Saving configuration...");
       var configPath = Path.Combine(MyFileSystem.UserDataPath, "Storage", ConfigFileName);
 
       Directory.CreateDirectory(System.IO.Path.GetDirectoryName(configPath));
@@ -46,10 +68,9 @@ namespace AnanaceDev.AnalogGridControl
 
     void ReadDevices()
     {
-      MyPluginLog.Info("Acquiring DirectInput devices...");
+      MyPluginLog.Info("Checking for attached DirectInput devices...");
 
       DInput = new DirectInput();
-
       var devices = DInput.GetDevices(DeviceClass.GameControl, DeviceEnumerationFlags.AttachedOnly) as IReadOnlyList<DeviceInstance>;
 
       bool dirty = false;
@@ -58,12 +79,12 @@ namespace AnanaceDev.AnalogGridControl
         InputDevice dev;
         if (Plugin.InputRegistry.HasDevice(device))
         {
-          MyPluginLog.Info($"- Existing device '{device.InstanceName}', reading mappings from registry.");
+          MyPluginLog.Info($"- Existing device '{device.InstanceName}' found, reading mappings from registry.");
           dev = Plugin.InputRegistry.GetDevice(device);
         }
         else
         {
-          MyPluginLog.Info($"- New device '{device.InstanceName}', adding to registry.");
+          MyPluginLog.Info($"- New device '{device.InstanceName}' found, adding to registry.");
           dev = new InputDevice();
         }
 
@@ -88,7 +109,7 @@ namespace AnanaceDev.AnalogGridControl
       {
         if (File.Exists(configPath))
         {
-          MyPluginLog.Info("Loading mappings from file...");
+          MyPluginLog.Info("Loading configuration from file...");
           var xmlSerializer = new XmlSerializer(typeof(InputRegistry));
           using (var streamReader = File.OpenText(configPath))
             InputRegistry = (InputRegistry)xmlSerializer.Deserialize(streamReader);

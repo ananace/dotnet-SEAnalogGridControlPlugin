@@ -1,6 +1,10 @@
+using System.Linq;
 using System.Text;
+using AnanaceDev.AnalogGridControl.Util;
 using Sandbox;
 using Sandbox.Graphics.GUI;
+using VRage.Game;
+using VRage.Utils;
 using VRageMath;
 
 namespace AnanaceDev.AnalogGridControl.GUI
@@ -13,6 +17,8 @@ namespace AnanaceDev.AnalogGridControl.GUI
     const string Caption = "Configure Device Binds";
 
     public InputDevice Device { get; private set; }
+
+    MyGuiControlTable bindsList;
 
     public DeviceDialog(InputDevice dev)
       : base(
@@ -42,40 +48,53 @@ namespace AnanaceDev.AnalogGridControl.GUI
       base.RecreateControls(constructor);
 
 #region Controls
-      var caption = AddCaption(Caption, captionScale: 1);
+      var caption = AddCaption(Device.DeviceName);
 
-      var bindLabel = new MyGuiControlLabel(text: "Binds");
-      var bindList = new MyGuiControlTable();
-      bindList.ColumnsCount = 3;
-      bindList.SetCustomColumnWidths(new[]
+      bindsList = new MyGuiControlTable()
       {
-        0.9f,
-        0.05f,
-        0.05f,
+        ColumnsCount = 3,
+        OriginAlign = MyGuiDrawAlignEnum.HORISONTAL_RIGHT_AND_VERTICAL_TOP,
+        Size = new Vector2(m_size.Value.X - this.GetOptimalSpacer() * 2, 0),
+      };
+      bindsList.SetCustomColumnWidths(new[]
+      {
+        0.92f,
+        0.04f,
+        0.04f,
       });
-      bindList.SetColumnName(0, new StringBuilder("Bind"));
-      bindList.SetColumnName(1, new StringBuilder("Edit"));
-      bindList.SetColumnName(2, new StringBuilder("Delete"));
+      bindsList.SetColumnName(0, new StringBuilder("Bind"));
+      //bindsList.SetColumnName(1, new StringBuilder("Edit"));
+      //bindsList.SetColumnName(2, new StringBuilder("Delete"));
 
-      var addBindButton = new MyGuiControlButton(text: new StringBuilder("Add Bind"));
+      var addBindButton = new MyGuiControlButton(
+        originAlign: MyGuiDrawAlignEnum.HORISONTAL_RIGHT_AND_VERTICAL_BOTTOM,
+        visualStyle: MyGuiControlButtonStyleEnum.Increase, toolTip: "Add Bind"
+      );
+      addBindButton.ButtonClicked += AddBindPressed;
+
+      Controls.Add(addBindButton);
+      Controls.Add(bindsList);
 #endregion
 
 #region Layout
-      var layout = new MyLayoutVertical(this, 0.0f);
-      
-      layout.Add(caption, MyAlignH.Center);
-      layout.Advance(10.0f);
-      layout.Add(bindList, MyAlignH.Left);
-      layout.Add(addBindButton, MyAlignH.Right);
+      var bottomRight = new Vector2(m_size.Value.X * 0.5f, m_size.Value.Y * 0.5f);
+      var spacer = this.GetOptimalSpacerVector();
+
+      addBindButton.Position = bottomRight - spacer;
+
+      bindsList.Position = new Vector2(bottomRight.X - spacer.X, caption.GetCoordTopLeftFromAligned().Y + caption.Size.Y + spacer.Y);
+      bindsList.SetTableHeight(addBindButton.GetCoordTopLeftFromAligned().Y - caption.GetCoordTopLeftFromAligned().Y - spacer.Y * 2);
 #endregion
 
-      PopulateBindsList(bindList);
+      PopulateBindsList();
     }
 
-    void PopulateBindsList(MyGuiControlTable bindsList)
+    void PopulateBindsList()
     {
       bindsList.Clear();
       bindsList.Controls.Clear();
+
+      var alterColumnSize = new Vector2(bindsList.Size.X * 0.15f, bindsList.RowHeight) * 0.5f;
 
       foreach (var bind in Device.Binds)
       {
@@ -84,26 +103,83 @@ namespace AnanaceDev.AnalogGridControl.GUI
         var row = new MyGuiControlTable.Row(bind);
         row.AddCell(new MyGuiControlTable.Cell(bind.ToString(), toolTip: tip));
 
-        var editCell = new MyGuiControlTable.Cell();
-        var editButton = new MyGuiControlButton();
-        var editIcon = new MyGuiControlImage(size: editButton.Size, textures: new[] { @"Textures\GUI\Controls\button_filter_system_highlight.dds" });
-        editIcon.HasHighlight = editButton.HasHighlight;
-        editButton.Elements.Add(editIcon);
+        var editCell = new MyGuiControlTable.Cell(toolTip: "Edit");
+        var editButton = new MyGuiControlButton(visualStyle: MyGuiControlButtonStyleEnum.SquareSmall, size: alterColumnSize)
+        {
+          UserData = bind,
+        };
+        editButton.AddImageToButton(@"Textures\GUI\Controls\button_filter_system_highlight.dds");
+        editButton.ButtonClicked += EditBindPressed;
         editCell.Control = editButton;
+
         bindsList.Controls.Add(editButton);
         row.AddCell(editCell);
 
-        var deleteCell = new MyGuiControlTable.Cell();
-        var deleteButton = new MyGuiControlButton();
-        var deleteIcon = new MyGuiControlImage(size: deleteButton.Size, textures: new[] { @"Textures\GUI\Controls\button_close_symbol_bcg_highlight.dds" });
-        deleteIcon.HasHighlight = deleteButton.HasHighlight;
-        deleteButton.Elements.Add(deleteIcon);
+        var deleteCell = new MyGuiControlTable.Cell(toolTip: "Delete");
+        var deleteButton = new MyGuiControlButton(visualStyle: MyGuiControlButtonStyleEnum.SquareSmall, size: alterColumnSize)
+        {
+          UserData = bind,
+        };
+        deleteButton.AddImageToButton(@"Textures\GUI\Controls\button_close_symbol_highlight.dds");
+        deleteButton.ButtonClicked += DeleteBindPressed;
         deleteCell.Control = deleteButton;
+
         bindsList.Controls.Add(deleteButton);
         row.AddCell(deleteCell);
 
         bindsList.Add(row);
       }
+    }
+
+    void AddBindPressed(MyGuiControlButton button)
+    {
+      MyGuiSandbox.AddScreen(CreateBindDialog(Device));
+    }
+
+    void EditBindPressed(MyGuiControlButton button)
+    {
+      if (!(button.UserData is InputMapping.Bind bind))
+        return;
+
+      MyGuiSandbox.AddScreen(CreateBindDialog(Device, bind));
+    }
+
+    BindDialog CreateBindDialog(InputDevice dev, InputMapping.Bind bind = null)
+    {
+      var dialog = new BindDialog(dev, bind == null ? null : bind.Clone());
+      dialog.ResultCallback += (_, result) => {
+        if (result == MyGuiScreenMessageBox.ResultEnum.YES)
+        {
+          if (bind == null)
+            Device.Binds.Add(dialog.Bind);
+          else
+            bind.ApplyValuesFrom(dialog.Bind);
+
+          PopulateBindsList();
+        }
+      };
+      return dialog;
+    }
+
+    void DeleteBindPressed(MyGuiControlButton button)
+    {
+      if (!(button.UserData is InputMapping.Bind bind))
+        return;
+
+      var dialog = MyGuiSandbox.CreateMessageBox(MyMessageBoxStyleEnum.Info, MyMessageBoxButtonsType.YES_NO, new StringBuilder("Delete bind?"), VRage.MyTexts.Get(MyCommonTexts.MessageBoxCaptionPleaseConfirm));
+
+      dialog.ResultCallback += (result) => {
+        if (result == MyGuiScreenMessageBox.ResultEnum.YES)
+        {
+          Device.Binds.Remove(bind);
+          var row = bindsList.Find((match) => match.UserData == bind);
+          bindsList.Controls.Remove(row.GetCell(1).Control);
+          bindsList.Controls.Remove(row.GetCell(2).Control);
+          bindsList.Remove(row);
+        }
+      };
+
+      MyGuiSandbox.AddScreen(dialog);
     }
   }
 

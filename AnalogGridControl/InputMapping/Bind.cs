@@ -13,8 +13,8 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
   {
     public DeviceAxis? InputAxis { get; set; } = null;
     public int? InputButton { get; set; } = null;
-    public int? InputHat { get; set; } = null;
     public DeviceHatAxis? InputHatAxis { get; set; } = null;
+    public int? InputHat { get; set; } = null;
 
     public GameAxis? MappingAxis { get; set; } = null;
     public bool MappingAxisInvert { get; set; } = false;
@@ -22,14 +22,34 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
 
     public float Value { get; private set; }
     public bool IsActive { get; private set; }
+    public bool IsValid { get { 
+      return (InputAxis.HasValue || InputButton.HasValue || InputHatAxis.HasValue)
+        && (MappingAxis.HasValue || MappingAction.HasValue);
+    } }
+
     public bool IsAxisMapping { get { return MappingAxis.HasValue; } }
     public bool IsActionMapping { get { return MappingAction.HasValue; } }
 
     public float Deadzone { get; set; } = 0.05f;
-    public float Multiplier { get; set; } = 1.0f;
     /// Using the formula f(x) = a * x^3 + (1 - a) * x 
     /// 0 is linear, 1 is x^3
     public float Curve { get; set; } = 0.0f;
+
+    public void Clear()
+    {
+      // Reset values to defaults
+      InputAxis = null;
+      InputButton = null;
+      InputHatAxis = null;
+      InputHat = null;
+      MappingAxis = null;
+      MappingAxisInvert = false;
+      MappingAction = null;
+      Deadzone = 0.05f;
+      Curve = 0.0f;
+
+      Reset();
+    }
 
     public void Reset()
     {
@@ -43,21 +63,7 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
 
       if (InputAxis.HasValue)
       {
-        switch (InputAxis)
-        {
-          case DeviceAxis.X: intValue = state.X; break;
-          case DeviceAxis.Y: intValue = state.Y; break;
-          case DeviceAxis.Z: intValue = state.Z; break;
-          case DeviceAxis.RX: intValue = state.RotationX; break;
-          case DeviceAxis.RY: intValue = state.RotationY; break;
-          case DeviceAxis.RZ: intValue = state.RotationZ; break;
-          case DeviceAxis.Slider0: intValue = state.Sliders[0]; break;
-          case DeviceAxis.Slider1: intValue = state.Sliders[1]; break;
-        }
-
-        var range = device.GetRange(InputAxis.Value);
-
-        floatValue = (float)((double)intValue / (double)range.Maximum);
+        floatValue = state.GetAxisValueNormalized(InputAxis.Value, device.GetRange(InputAxis.Value));
         if (MappingAxisInvert)
           floatValue = 1.0f - floatValue;
 
@@ -71,7 +77,6 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
         if (Curve != 0.0f)
         {
           var curve = Math.Max(0.0f, Math.Min(1.0f, Curve));
-          // var before = floatValue.Value;
 
           // Remap both halves of input so that the curve applies properly
           bool? positive = null;
@@ -85,29 +90,14 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
 
           if (positive.HasValue)
             floatValue = positive.Value ? floatValue * 0.5f + 0.5f : 0.5f - floatValue * 0.5f;
-
-          // MyPluginLog.Debug($"Bind {device.DeviceName} :: {InputAxis}->{MappingAxis} applying curve {curve}: {before} -> {floatValue}");
         }
       }
       else if (InputButton.HasValue)
         intValue = state.Buttons[InputButton.Value] ? 1 : 0;
       else if (InputHatAxis.HasValue)
-      {
-        var hat = state.PointOfViewControllers[InputHat ?? 0];
-        var angle = hat / 10000.0f;
+        intValue = state.GetPOVAxis(InputHatAxis.Value, InputHat) ? 1 : 0;
 
-        switch (InputHatAxis)
-        {
-          // case DeviceHatAxis.N: intValue = 0; break;
-          // case DeviceHatAxis.E: intValue = 0; break;
-          // case DeviceHatAxis.S: intValue = 0; break;
-          // case DeviceHatAxis.W: intValue = 0; break;
-        }
-
-        MyPluginLog.Debug($"Bind {device.DeviceName} :: Hat{InputHat ?? 0}/{InputHatAxis} ({hat} | {angle}) -> {intValue}");
-      }
-
-      if (intValue != null)
+      if (intValue.HasValue || floatValue.HasValue)
       {
         if (floatValue.HasValue)
           Value = floatValue.Value;
@@ -115,13 +105,6 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
           Value = intValue.Value;
 
         IsActive = Value >= 0.75f;
-
-        /*
-        if (MappingAxis.HasValue)
-          MyPluginLog.Debug($"InputMapping {GameAxis}->{MappingAxis} (inv? {MappingAxisInvert}) => {intValue} -> {Value}");
-        else
-          MyPluginLog.Debug($"InputMapping {InputButton}->{MappingAction} => {intValue} -> {Value} ({IsActive})");
-        */
       }
 
       return intValue != null;
@@ -133,29 +116,52 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
       if (InputAxis.HasValue)
         builder.Append(InputAxis.Value);
       else if (InputButton.HasValue)
-        builder.Append($"B{InputButton.Value}");
+        builder.Append($"Btn[{InputButton.Value + 1}]");
       else if (InputHatAxis.HasValue)
-        builder.Append($"POV{InputHat ?? 0}/{InputHatAxis}");
+        builder.Append($"Hat[{(InputHat ?? 0) + 1}] {InputHatAxis}");
       else
-        builder.Append("<Unknown>");
+        builder.Append("<Unk>");
 
-      builder.Append(" -> ");
+      builder.Append(" => ");
 
       if (MappingAxis.HasValue)
         builder.Append(MappingAxis.Value.GetHumanReadableName());
       else if (MappingAction.HasValue)
         builder.Append(MappingAction.Value.GetHumanReadableName());
       else
-        builder.Append("<Unknown>");
+        builder.Append("<Unk>");
 
       return builder.ToString();
+    }
+
+    public void DebugPrint()
+    {
+      MyPluginLog.Debug("Bind:");
+      MyPluginLog.Debug($"  InputAxis: {InputAxis}");
+      MyPluginLog.Debug($"  InputButton: {InputButton}");
+      MyPluginLog.Debug($"  InputHatAxis: {InputHatAxis}");
+      MyPluginLog.Debug($"  InputHat: {InputHat}");
+      MyPluginLog.Debug($"  MappingAxis: {MappingAxis}");
+      MyPluginLog.Debug($"  MappingAxisInvert: {MappingAxisInvert}");
+      MyPluginLog.Debug($"  MappingAction: {MappingAction}");
+      MyPluginLog.Debug($"  Deadzone: {Deadzone}");
+      MyPluginLog.Debug($"  Curve: {Curve}");
+      MyPluginLog.Debug("");
+      MyPluginLog.Debug($"  Value: {Value}");
+      MyPluginLog.Debug($"  IsActive: {IsActive}");
     }
 
 #region XML Serialization
     public void WriteXml(XmlWriter writer)
     {
       if (InputAxis.HasValue)
+      {
         writer.WriteAttributeString("Axis", InputAxis.Value.ToString());
+        if (Deadzone != 0.05f)
+          writer.WriteAttributeString("Deadzone", Deadzone.ToString());
+        if (Curve != 0.0f)
+          writer.WriteAttributeString("Curve", Curve.ToString());
+      }
       else if (InputButton.HasValue)
         writer.WriteAttributeString("Button", InputButton.Value.ToString());
       else if (InputHatAxis.HasValue)
@@ -173,43 +179,43 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
       }
       else if (MappingAction.HasValue)
         writer.WriteAttributeString("OutputAction", MappingAction.Value.ToString());
-
-      if (Deadzone != 0.05f)
-        writer.WriteAttributeString("Deadzone", Deadzone.ToString());
-      if (Multiplier != 1.0f)
-        writer.WriteAttributeString("Multiplier", Multiplier.ToString());
-      if (Curve != 0.0f)
-        writer.WriteAttributeString("Curve", Curve.ToString());
     }
 
     public void ReadXml(XmlReader reader)
     {
-      if (reader.GetAttribute("Axis") is string axis)
-        InputAxis = (DeviceAxis)Enum.Parse(typeof(DeviceAxis), axis);
-      else if (reader.GetAttribute("Button") is string button)
-        InputButton = int.Parse(button);
-      else if (reader.GetAttribute("HatAxis") is string hatAxis)
+      try
       {
-        InputHatAxis = (DeviceHatAxis)Enum.Parse(typeof(DeviceHatAxis), hatAxis);
-        if (reader.GetAttribute("Hat") is string hat)
-          InputHat = int.Parse(hat);
-      }
+        if (reader.GetAttribute("Axis") is string axis)
+        {
+          InputAxis = (DeviceAxis)Enum.Parse(typeof(DeviceAxis), axis);
 
-      if (reader.GetAttribute("OutputAxis") is string outputAxis)
+          if (reader.GetAttribute("Deadzone") is string deadzone)
+            Deadzone = float.Parse(deadzone);
+          if (reader.GetAttribute("Curve") is string curve)
+            Curve = float.Parse(curve);
+        }
+        else if (reader.GetAttribute("Button") is string button)
+          InputButton = int.Parse(button);
+        else if (reader.GetAttribute("HatAxis") is string hatAxis)
+        {
+          InputHatAxis = (DeviceHatAxis)Enum.Parse(typeof(DeviceHatAxis), hatAxis);
+          if (reader.GetAttribute("Hat") is string hat)
+            InputHat = int.Parse(hat);
+        }
+
+        if (reader.GetAttribute("OutputAxis") is string outputAxis)
+        {
+          MappingAxis = (GameAxis)Enum.Parse(typeof(GameAxis), outputAxis);
+          if (reader.GetAttribute("OutputAxisInvert") is string invert)
+            MappingAxisInvert = bool.Parse(invert);
+        }
+        else if (reader.GetAttribute("OutputAction") is string action)
+          MappingAction = (GameAction)Enum.Parse(typeof(GameAction), action);
+      }
+      catch (Exception ex)
       {
-        MappingAxis = (GameAxis)Enum.Parse(typeof(GameAxis), outputAxis);
-        if (reader.GetAttribute("OutputAxisInvert") is string invert)
-          MappingAxisInvert = bool.Parse(invert);
+        MyPluginLog.Warning($"Failed to parse a bind, skipping. {ex}");
       }
-      else if (reader.GetAttribute("OutputAction") is string action)
-        MappingAction = (GameAction)Enum.Parse(typeof(GameAction), action);
-
-      if (reader.GetAttribute("Deadzone") is string deadzone)
-        Deadzone = float.Parse(deadzone);
-      if (reader.GetAttribute("Multiplier") is string multiplier)
-        Multiplier = float.Parse(multiplier);
-      if (reader.GetAttribute("Curve") is string curve)
-        Curve = float.Parse(curve);
 
       reader.Skip();
     }
@@ -217,6 +223,41 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
     public XmlSchema GetSchema()
     {
       return(null);
+    }
+#endregion
+
+#region Clone
+    public Bind Clone()
+    {
+      return MemberwiseClone() as Bind;
+    }
+
+    public void ApplyValuesFrom(Bind other)
+    {
+      Clear();
+
+      // Import relevant values from given bind
+      if (other.InputAxis.HasValue)
+      {
+        InputAxis = other.InputAxis;
+        Deadzone = other.Deadzone;
+        Curve = other.Curve;
+      }
+      else if (other.InputHatAxis.HasValue)
+      {
+        InputHatAxis = other.InputHatAxis;
+        InputHat = other.InputHat;
+      }
+      else if (other.InputButton.HasValue)
+        InputButton = other.InputButton;
+
+      if (other.MappingAxis.HasValue)
+      {
+        MappingAxis = other.MappingAxis;
+        MappingAxisInvert = other.MappingAxisInvert;
+      }
+      else if (other.MappingAction.HasValue)
+        MappingAction = other.MappingAction;
     }
 #endregion
   }
