@@ -2,17 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-
-    <Version>0.1.0</Version>
-    <Authors>Alexander "Ananace" Olofsson</Authors>
-    <Company>Introvert Software</Company>
-    <Product>AnalogGridControlPlugin</Product>
-    <PackageId>AnalogGridControlPlugin</PackageId>
-    <NeutralLanguage>en</NeutralLanguage>
-    <Description>Analog Grid Control Plugin for Space Engineers</Description>
-    <Copyright>Copyright © Alexander "Ananace" Olofsson 2024</Copyright>
-    <RepositoryUrl>https://github.com/ananace/dotnet-SEAnalogGridControlPlugin</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <PropertyGroup>

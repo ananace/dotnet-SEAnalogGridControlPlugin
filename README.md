@@ -25,10 +25,13 @@ To Do;
   - [X] Targeting
   - [ ] Stepped toolbar action selection without activating.
         (Will require another patch)
+  - [ ] Analog brakes for wheels.
+        (Will require another patch)
   - [ ] ...
 - [ ] Handle devices (re)appearing during gameplay.
       (Currently requires a game restart)
 - [ ] Ensure multiplayer works
 - [X] Configuration UI
+  - [ ] Reordering of binds(?)
 - [ ] Exception handling _everywhere_
 - [ ] Pretty code
