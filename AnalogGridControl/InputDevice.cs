@@ -113,7 +113,7 @@ namespace AnanaceDev.AnalogGridControl
       if (IsValid)
       {
         Joystick.Acquire();
-        LastState = CurrentState = Joystick.GetCurrentState();
+        CurrentState = Joystick.GetCurrentState();
         IsAcquired = true;
         MyPluginLog.Info($"{Device.InstanceName} - Acquired");
 

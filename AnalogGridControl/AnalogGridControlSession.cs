@@ -1,4 +1,5 @@
-﻿using AnanaceDev.AnalogGridControl.InputMapping;
+﻿using System.Linq;
+using AnanaceDev.AnalogGridControl.InputMapping;
 using AnanaceDev.AnalogGridControl.Util;
 using Sandbox.ModAPI;
 using VRage.Game;
@@ -68,6 +69,9 @@ namespace AnanaceDev.AnalogGridControl
       if (CurrentPlayer == null)
       {
         MyPluginLog.Debug("AnalogGridControlSession - Found player");
+
+        // Ensure all input devices are primed
+        Input.Devices.ForEach(dev => dev.Update(false));
         CurrentPlayer = Session.Player;
         CurrentPlayer.Controller.ControlledEntityChanged += UpdateCurrentControlUnit;
         UpdateCurrentControlUnit(null, CurrentPlayer.Controller.ControlledEntity);
@@ -240,7 +244,8 @@ namespace AnanaceDev.AnalogGridControl
         if (Input.MovementVector.LengthSquared() > 0.0f)
         {
           Vector3 controlThrust;
-          Vector3.RotateAndScale(ref Input.MovementVector, ref orientMatrix, out controlThrust);
+          Vector3 input = Input.MovementVector;
+          Vector3.RotateAndScale(ref input, ref orientMatrix, out controlThrust);
           CurrentCockpit.EntityThrustComponent.AutoPilotControlThrust = -controlThrust;
         }
         else
