@@ -125,10 +125,12 @@ namespace AnanaceDev.AnalogGridControl
 
       if (IsValid)
       {
-        Joystick.Unacquire();
+        try { Joystick.Unacquire(); } catch {}
         IsAcquired = false;
         MyPluginLog.Info($"{Device.InstanceName} - Unacquired");
       }
+
+      Binds.ForEach(bind => bind.Reset());
     }
 
     public void Dispose()
@@ -170,10 +172,9 @@ namespace AnanaceDev.AnalogGridControl
       }
       catch (Exception ex)
       {
-        IsAcquired = false;
-        try { Joystick.Unacquire(); } catch {}
-
         MyPluginLog.Warning($"Device {DeviceName} failed to update state, unaquiring... {ex}");
+
+        Unaquire();
       }
     }
 
