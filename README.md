@@ -35,5 +35,6 @@ To Do;
       (Should these be separate binds, or unified?)
 - [X] Configuration UI
   - [ ] Reordering of binds(?)
+- [ ] Separate static configuration from runtime data
 - [ ] Exception handling _everywhere_
 - [ ] Pretty code
