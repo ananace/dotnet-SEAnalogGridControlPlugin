@@ -112,10 +112,23 @@ namespace AnanaceDev.AnalogGridControl
         Joystick.Acquire();
         LastState = CurrentState = Joystick.GetCurrentState();
         IsAcquired = true;
-        MyPluginLog.Debug($"{Device.InstanceName} - Acquired");
+        MyPluginLog.Info($"{Device.InstanceName} - Acquired");
       }
       else
-        MyPluginLog.Debug($"{Device.InstanceName} - Acquire failed");
+        MyPluginLog.Info($"{Device.InstanceName} - Acquire failed");
+    }
+
+    public void Unaquire()
+    {
+      if (!IsAcquired)
+        return;
+
+      if (IsValid)
+      {
+        Joystick.Unacquire();
+        IsAcquired = false;
+        MyPluginLog.Info($"{Device.InstanceName} - Unacquired");
+      }
     }
 
     public void Dispose()
@@ -145,17 +158,30 @@ namespace AnanaceDev.AnalogGridControl
       if (!IsValid || !IsAcquired)
         return;
 
-      LastState = CurrentState;
-      CurrentState = Joystick.GetCurrentState();
-      if (!runBinds)
-        return;
+      try
+      {
+        LastState = CurrentState;
+        CurrentState = Joystick.GetCurrentState();
+        if (!runBinds)
+          return;
 
-      foreach (var bind in Binds)
-        bind.Apply(CurrentState, this);
+        foreach (var bind in Binds)
+          bind.Apply(CurrentState, this);
+      }
+      catch (Exception ex)
+      {
+        IsAcquired = false;
+        try { Joystick.Unacquire(); } catch {}
+
+        MyPluginLog.Warning($"Device {DeviceName} failed to update state, unaquiring... {ex}");
+      }
     }
 
     public Bind DetectBind()
     {
+      if (!IsValid || !IsAcquired)
+        return null;
+
       Update(false);
 
       for (int i = 0; i < Buttons; ++i)
