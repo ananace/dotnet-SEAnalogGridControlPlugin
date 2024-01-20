@@ -77,36 +77,8 @@ namespace AnanaceDev.AnalogGridControl
 
     void ReadDevices()
     {
-      MyPluginLog.Info("Checking for attached DirectInput devices...");
-
       DInput = new DirectInput();
-      var devices = DInput.GetDevices(DeviceClass.GameControl, DeviceEnumerationFlags.AttachedOnly) as IReadOnlyList<DeviceInstance>;
-
-      bool dirty = false;
-      foreach (var device in devices)
-      {
-        InputDevice dev;
-        if (Plugin.InputRegistry.HasDevice(device))
-        {
-          MyPluginLog.Info($"- Existing device '{device.InstanceName}' found, reading mappings from registry.");
-          dev = Plugin.InputRegistry.GetDevice(device);
-        }
-        else
-        {
-          MyPluginLog.Info($"- New device '{device.InstanceName}' found, adding to registry.");
-          dev = new InputDevice();
-        }
-
-        dev.Init(DInput, device);
-
-        if (!Plugin.InputRegistry.HasDevice(device))
-        {
-          Plugin.InputRegistry.Devices.Add(dev);
-          dirty = true;
-        }
-      }
-
-      if (dirty)
+      if (InputRegistry.DiscoverDevices(DInput))
         SaveMappings();
     }
 

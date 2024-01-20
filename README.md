@@ -29,6 +29,7 @@ To Do;
   - [ ] ...
 - [ ] Handle devices (re)appearing during gameplay.
       (Currently requires a game restart)
+- [ ] Handle DInput giving bogus output on device axises until they've been actuated
 - [ ] Ensure multiplayer works
 - [ ] Gamepad interoperability(?)
 - [ ] Support FPS input binds as well(?)

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Serialization;
+using AnanaceDev.AnalogGridControl.Util;
 using SharpDX.DirectInput;
 
 namespace AnanaceDev.AnalogGridControl
@@ -22,12 +23,56 @@ namespace AnanaceDev.AnalogGridControl
 
     public bool HasDevice(DeviceInstance device)
     {
-      return Devices.Any((reg) => reg.DeviceName == device.InstanceName && reg.DeviceUUID == device.InstanceGuid);
+      return Devices.Any((reg) => reg.DeviceName == device.InstanceName);
     }
 
+    // XXX: Some different Logitech devices seem to grab the same instance UUIDs
     public InputDevice GetDevice(DeviceInstance device)
     {
-      return Devices.First((reg) => reg.DeviceName == device.InstanceName && reg.DeviceUUID == device.InstanceGuid);
+      var potential = Devices.Where(reg => reg.DeviceName == device.InstanceName);
+      var attempted = potential.FirstOrDefault(reg => reg.DeviceUUID == device.InstanceGuid);
+      if (attempted == null)
+      {
+        MyPluginLog.Warning($"Found instances for '{device.InstanceName}', but none which match the given UUID, using the first discovered");
+        return potential.First();
+      }
+      return attempted;
+    }
+
+    public bool DiscoverDevices(DirectInput dinput, bool rediscover = false)
+    {
+      MyPluginLog.Info("Checking for attached DirectInput devices...");
+      var devices = dinput.GetDevices(DeviceClass.GameControl, DeviceEnumerationFlags.AttachedOnly) as IReadOnlyList<DeviceInstance>;
+
+      bool dirty = false;
+      foreach (var device in devices)
+      {
+        InputDevice dev;
+        if (Plugin.InputRegistry.HasDevice(device))
+        {
+          MyPluginLog.Info($"- Existing device '{device.InstanceName}' found.");
+          dev = Plugin.InputRegistry.GetDevice(device);
+        }
+        else
+        {
+          MyPluginLog.Info($"- New device '{device.InstanceName}' found.");
+          dev = new InputDevice();
+        }
+
+        if (!dev.IsInitialized)
+        {
+          dev.Init(dinput, device);
+          if (rediscover)
+            dirty = true;
+        }
+
+        if (!Plugin.InputRegistry.HasDevice(device))
+        {
+          Plugin.InputRegistry.Devices.Add(dev);
+          dirty = true;
+        }
+      }
+      return dirty;
     }
 
     public void Cleanup()

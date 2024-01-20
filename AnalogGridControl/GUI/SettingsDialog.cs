@@ -62,16 +62,22 @@ namespace AnanaceDev.AnalogGridControl.GUI
       deviceList.SetColumnName(1, new StringBuilder("Name"));
       deviceList.SetColumnName(2, new StringBuilder("Binds"));
       //deviceList.SetColumnName(3, new StringBuilder("Edit"));
+      
+      var rescanButton = new MyGuiControlButton(visualStyle: VRage.Game.MyGuiControlButtonStyleEnum.SquareSmall, toolTip: "Rescan devices");
+      rescanButton.ButtonClicked += (_) => {
+        if (Plugin.InputRegistry.DiscoverDevices(Plugin.DInput, true))
+          PopulateDeviceList(deviceList);
+      };
 
       var analogEnabledTip = "Should analog input be enabled when entering a cockpit/seat,\nor should it require a press of the Toggle Analog Input Active bind first.";
       var analogEnabledLabel = new MyGuiControlLabel(text: "Enabled By Default");
       var analogEnabledCheckbox = new MyGuiControlCheckbox(toolTip: analogEnabledTip, isChecked: Plugin.InputActiveByDefault, originAlign: MyGuiDrawAlignEnum.HORISONTAL_LEFT_AND_VERTICAL_BOTTOM);
       analogEnabledCheckbox.IsCheckedChanged += (_) => Plugin.InputRegistry.InputActiveByDefault = analogEnabledCheckbox.IsChecked;
 
-      Controls.Add(analogEnabledCheckbox);
-      Elements.Add(analogEnabledLabel);
-
       Controls.Add(deviceList);
+      Controls.Add(rescanButton);
+      Elements.Add(analogEnabledLabel);
+      Controls.Add(analogEnabledCheckbox);
 #endregion
 
 #region Layout
@@ -84,6 +90,7 @@ namespace AnanaceDev.AnalogGridControl.GUI
       deviceList.Position = new Vector2(bottomLeft.X + spacer.X, caption.GetCoordTopLeftFromAligned().Y + caption.Size.Y + spacer.Y);
       deviceList.SetTableHeight(analogEnabledCheckbox.GetCoordTopLeftFromAligned().Y - caption.GetCoordTopLeftFromAligned().Y - spacer.Y * 2);
 
+      rescanButton.PositionBelow(deviceList, MyAlignH.Right);
 #endregion
       
       PopulateDeviceList(deviceList);

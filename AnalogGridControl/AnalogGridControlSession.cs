@@ -81,6 +81,13 @@ namespace AnanaceDev.AnalogGridControl
       if (!Session.IsServer && Plugin.InputRegistry.InputThrottleMultiplayerSpecified && (CurrentTick % Plugin.InputThrottleMultiplayer) != 0)
         return;
 
+      if (CurrentTick % 100 == 0 && Input.Devices.Any(dev => !dev.IsInitialized))
+      {
+        MyPluginLog.Info("Invalid devices in input aggregate, attempting rescan...");
+        if (Plugin.InputRegistry.DiscoverDevices(Input.DInput, true))
+          Input.Devices.Where(dev => !dev.IsAcquired).ForEach((dev => dev.Acquire()));
+      }
+
       Input.UpdateInputs();
 
       UpdateCurrentGridInputs();

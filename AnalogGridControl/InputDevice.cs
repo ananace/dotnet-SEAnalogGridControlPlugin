@@ -108,6 +108,17 @@ namespace AnanaceDev.AnalogGridControl
       }
     }
 
+    public void Uninit()
+    {
+      if (IsAcquired)
+        Unacquire();
+
+      Joystick?.Dispose();
+      Joystick = null;
+
+      IsInitialized = false;
+    }
+
     public void Acquire()
     {
       if (IsAcquired)
@@ -126,7 +137,7 @@ namespace AnanaceDev.AnalogGridControl
         MyPluginLog.Info($"{DeviceName} - Acquire failed");
     }
 
-    public void Unaquire()
+    public void Unacquire()
     {
       if (!IsAcquired)
         return;
@@ -185,9 +196,9 @@ namespace AnanaceDev.AnalogGridControl
       }
       catch (Exception ex)
       {
-        MyPluginLog.Warning($"Device {DeviceName} failed to update state, unaquiring... {ex}");
+        MyPluginLog.Warning($"Device {DeviceName} failed to update state, disabling... {ex}");
 
-        Unaquire();
+        Uninit();
       }
 
       return false;
