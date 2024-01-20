@@ -8,8 +8,9 @@ namespace AnanaceDev.AnalogGridControl.Patches
   [HarmonyPatch(typeof(MyShipController), nameof(MyShipController.MoveAndRotate), new System.Type[0])]
   class MyShipControllerPatch
   {
-    static void Prefix(MyShipController __instance)
+    static void Prefix(MyShipController __instance, out float? __state)
     {
+      __state = null;
       if (AnalogGridControlSession.Instance == null)
         return;
 
@@ -38,7 +39,18 @@ namespace AnanaceDev.AnalogGridControl.Patches
       var oldRot = traverse.Property("RotationIndicator").GetValue<Vector2>();
       var oldRoll = traverse.Property("RollIndicator").GetValue<float>();
 
+      if (__instance.GridWheels != null && __instance.ControlWheels)
+        __state = AnalogGridControlSession.Instance.WantedWheelAcceleration;
+
       __instance.MoveAndRotate(oldMove + analogInput.MovementVector, oldRot + new VRageMath.Vector2(analogInput.RotationVector.X, analogInput.RotationVector.Y), oldRoll + analogInput.RotationVector.Z);
+    }
+
+    static void Postfix(MyShipController __instance, float? __state)
+    {
+      if (__state.HasValue)
+      {
+        __instance.GridWheels.AngularVelocity = new Vector3(__instance.GridWheels.AngularVelocity.X, 0, __state.Value);
+      }
     }
     
   }

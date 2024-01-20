@@ -17,6 +17,9 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
     [EnumDescription("Strafe Up/Down")]
     StrafeUpDown,
 
+    [EnumDescription("Brake")]
+    Brake,
+
     [EnumDescription("Pitch")]
     TurnPitch,
     [EnumDescription("Yaw")]

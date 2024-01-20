@@ -42,9 +42,11 @@ namespace AnanaceDev.AnalogGridControl
     
     public Vector3 _MovementVector = Vector3.Zero;
     public Vector3 _RotationVector = Vector3.Zero;
+    public float _BrakeForce = 0;
 
     public Vector3 MovementVector => _MovementVector;
     public Vector3 RotationVector => _RotationVector;
+    public float BrakeForce => _BrakeForce;
 
     public DirectInput DInput { get; set; }
     List<InputDevice> _Inputs = new List<InputDevice>();
@@ -76,6 +78,7 @@ namespace AnanaceDev.AnalogGridControl
 
       _MovementVector = Vector3.Zero;
       _RotationVector = Vector3.Zero;
+      _BrakeForce = 0;
 
       foreach (var device in _Inputs)
       {
@@ -120,6 +123,8 @@ namespace AnanaceDev.AnalogGridControl
               case GameAxis.StrafeForwardBackward: _MovementVector.Z = Math.Abs(value) > Math.Abs(_MovementVector.Z) ? value : _MovementVector.Z; break;
               case GameAxis.StrafeLeftRight: _MovementVector.X = Math.Abs(value) > Math.Abs(_MovementVector.X) ? value : _MovementVector.X; break;
               case GameAxis.StrafeUpDown: _MovementVector.Y = Math.Abs(value) > Math.Abs(_MovementVector.Y) ? value : _MovementVector.Y; break;
+
+              case GameAxis.Brake: _BrakeForce = Math.Abs(value) > _BrakeForce ? value : _BrakeForce; break;
 
               case GameAxis.TurnPitch: _RotationVector.X = Math.Abs(value) > Math.Abs(_RotationVector.X) ? value : _RotationVector.X; break;
               case GameAxis.TurnYaw: _RotationVector.Y = Math.Abs(value) > Math.Abs(_RotationVector.Y) ? value : _RotationVector.Y; break;

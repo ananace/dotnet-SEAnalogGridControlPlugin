@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using AnanaceDev.AnalogGridControl.InputMapping;
 using AnanaceDev.AnalogGridControl.Util;
 using Sandbox.ModAPI;
@@ -22,11 +23,13 @@ namespace AnanaceDev.AnalogGridControl
     public Vector3 MovementVector => Input.MovementVector;
     public Vector3 RotationVector => Input.RotationVector;
 
+    public float? WantedWheelAcceleration = null;
+
     public IMyPlayer CurrentPlayer { get; private set; }
     public IMyCockpit CurrentControllable { get; private set; }
     public IMyCubeGrid CurrentGrid { get; private set; }
 
-    private ushort CurrentTick = 0;
+    public ushort CurrentTick { get; private set; } = 0;
 
     public override void Init(MyObjectBuilder_SessionComponent _sessionComponent)
     {
@@ -90,6 +93,7 @@ namespace AnanaceDev.AnalogGridControl
 
       Input.UpdateInputs();
 
+      WantedWheelAcceleration = null;
       UpdateCurrentGridInputs();
     }
 
@@ -114,14 +118,18 @@ namespace AnanaceDev.AnalogGridControl
       }
       else if (CurrentControllable == null && oldControllable != null)
       {
-        if (!Plugin.ControllerPatched && oldControllable is Sandbox.Game.Entities.MyCockpit oldCockpit)
+        if (oldControllable is Sandbox.Game.Entities.MyCockpit oldCockpit)
         {
           MyPluginLog.Debug("Detached from grid, clearing old analog state");
 
-          oldCockpit.EntityThrustComponent.AutopilotEnabled = false;
-          oldCockpit.EntityThrustComponent.AutoPilotControlThrust = Vector3.Zero;
-          oldCockpit.GridGyroSystem.AutopilotEnabled = false;
-          oldCockpit.GridGyroSystem.ControlTorque = Vector3.Zero;
+          if (!Plugin.ControllerPatched)
+          {
+            oldCockpit.EntityThrustComponent.AutopilotEnabled = false;
+            oldCockpit.EntityThrustComponent.AutoPilotControlThrust = Vector3.Zero;
+            oldCockpit.GridGyroSystem.AutopilotEnabled = false;
+
+            oldCockpit.GridGyroSystem.ControlTorque = Vector3.Zero;
+          }
         }
       }
     }
@@ -224,21 +232,26 @@ namespace AnanaceDev.AnalogGridControl
 
     private void UpdateCurrentGridInputs()
     {
-      if (CurrentControllable == null || !Input.IsAnalogInputActive)
+      if (!Input.IsAnalogInputActive ||!(CurrentControllable is Sandbox.Game.Entities.MyCockpit CurrentCockpit))
         return;
 
-
-      if (!(CurrentControllable is Sandbox.Game.Entities.MyCockpit CurrentCockpit))
-        return;
-
-      if (Plugin.ControllerPatched)
+      if (CurrentCockpit.ControlWheels)
       {
         CurrentCockpit.WheelJump(Input.IsInputActive(GameAction.WheelJump));
         CurrentCockpit.TryEnableBrakes(Input.IsInputActive(GameAction.Brake));
 
-        return;
+        // Emulate wheel inputs due to lack of proper control
+        if (Input.BrakeForce > 0)
+          CurrentCockpit.TryEnableBrakes(AnalogEmulation.ShouldTick(Input.BrakeForce, CurrentTick));
+        if (AnalogEmulation.ShouldTick(Math.Abs(MovementVector.Z), CurrentTick))
+          WantedWheelAcceleration = MovementVector.Z;
+        else if (Math.Abs(MovementVector.Z) != 0)
+          WantedWheelAcceleration = 0;
       }
       
+      if (Plugin.ControllerPatched)
+        return;
+
       // Fallback for if analog patch fails
 
       // Inject normally, to hopefully work with recorder
