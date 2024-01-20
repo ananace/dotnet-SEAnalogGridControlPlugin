@@ -15,6 +15,18 @@
       <Private>false</Private>
       <HintPath>$(SpaceEngineersBin64)/0Harmony.dll</HintPath>
     </Reference>
+    <Reference Include="HavokWrapper">
+      <Private>false</Private>
+      <HintPath>$(SpaceEngineersBin64)/HavokWrapper.dll</HintPath>
+    </Reference>
+    <Reference Include="ProtoBuf.Net">
+      <Private>false</Private>
+      <HintPath>$(SpaceEngineersBin64)/ProtoBuf.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="ProtoBuf.Net.Core">
+      <Private>false</Private>
+      <HintPath>$(SpaceEngineersBin64)/ProtoBuf.Net.Core.dll</HintPath>
+    </Reference>
     <Reference Include="Sandbox.Common">
       <Private>false</Private>
       <HintPath>$(SpaceEngineersBin64)/Sandbox.Common.dll</HintPath>

@@ -15,6 +15,8 @@ namespace AnanaceDev.AnalogGridControl
   class Plugin : IPlugin, IDisposable
   {
     public const string Name = "AnalogGridControl";
+    public static ushort Id = 4556; // CRC16 of 'AnalogGridControl'
+    public static uint NetworkVersion = 1;
     private static readonly string ConfigFileName = $"{Name}.cfg";
 
     public static bool InputActiveByDefault => InputRegistry.InputActiveByDefault;

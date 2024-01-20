@@ -99,7 +99,7 @@ namespace AnanaceDev.AnalogGridControl
         {
           if (mapping.IsAxisMapping)
           {
-            float value = mapping.Value;
+            float value = MyMath.Clamp(mapping.Value, -1f, 1f);
             switch (mapping.MappingAxis)
             {
               case GameAxis.StrafeForward: value *= ForwardMult; break;
@@ -116,7 +116,7 @@ namespace AnanaceDev.AnalogGridControl
                 value = (value - 0.5f) * 40;
                 break;
             }
-            
+
             switch (mapping.MappingAxis)
             {
               case GameAxis.StrafeForward:
@@ -124,7 +124,7 @@ namespace AnanaceDev.AnalogGridControl
               case GameAxis.StrafeLeftRight: _MovementVector.X = Math.Abs(value) > Math.Abs(_MovementVector.X) ? value : _MovementVector.X; break;
               case GameAxis.StrafeUpDown: _MovementVector.Y = Math.Abs(value) > Math.Abs(_MovementVector.Y) ? value : _MovementVector.Y; break;
 
-              case GameAxis.Brake: _BrakeForce = Math.Abs(value) > _BrakeForce ? value : _BrakeForce; break;
+              case GameAxis.Brake: _BrakeForce = Math.Abs(value) > _BrakeForce ? MyMath.Clamp(value, 0f, 1f) : _BrakeForce; break;
 
               case GameAxis.TurnPitch: _RotationVector.X = Math.Abs(value) > Math.Abs(_RotationVector.X) ? value : _RotationVector.X; break;
               case GameAxis.TurnYaw: _RotationVector.Y = Math.Abs(value) > Math.Abs(_RotationVector.Y) ? value : _RotationVector.Y; break;

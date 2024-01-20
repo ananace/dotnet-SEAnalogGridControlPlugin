@@ -1,5 +1,7 @@
+using AnanaceDev.AnalogGridControl.Util;
 using HarmonyLib;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Multiplayer;
 using VRageMath;
 
 namespace AnanaceDev.AnalogGridControl.Patches
@@ -8,23 +10,9 @@ namespace AnanaceDev.AnalogGridControl.Patches
   [HarmonyPatch(typeof(MyShipController), nameof(MyShipController.MoveAndRotate), new System.Type[0])]
   class MyShipControllerPatch
   {
-    static void Prefix(MyShipController __instance, out float? __state)
+    static void Prefix(MyShipController __instance)
     {
-      __state = null;
-      if (AnalogGridControlSession.Instance == null)
-        return;
-
-      var analogInput = AnalogGridControlSession.Instance;
-      if (analogInput.CurrentControllable != __instance)
-        return;
-
-      if (analogInput.CurrentPlayer?.Character != __instance.Pilot)
-        return;
-
-      if (!analogInput.IsAnalogInputActive)
-        return;
-
-      if (Sandbox.Game.Gui.MyGuiScreenGamePlay.DisableInput)
+      if (!__instance.ShouldAnalogInput())
         return;
 
       /// Inject analog input before the ship controller calculates the final movement data.
@@ -39,18 +27,21 @@ namespace AnanaceDev.AnalogGridControl.Patches
       var oldRot = traverse.Property("RotationIndicator").GetValue<Vector2>();
       var oldRoll = traverse.Property("RollIndicator").GetValue<float>();
 
-      if (__instance.GridWheels != null && __instance.ControlWheels)
-        __state = AnalogGridControlSession.Instance.WantedWheelAcceleration;
-
+      var analogInput = AnalogGridControlSession.Instance;
       __instance.MoveAndRotate(oldMove + analogInput.MovementVector, oldRot + new VRageMath.Vector2(analogInput.RotationVector.X, analogInput.RotationVector.Y), oldRoll + analogInput.RotationVector.Z);
     }
 
-    static void Postfix(MyShipController __instance, float? __state)
+    static void Postfix(MyShipController __instance)
     {
-      if (__state.HasValue)
-      {
-        __instance.GridWheels.AngularVelocity = new Vector3(__instance.GridWheels.AngularVelocity.X, 0, __state.Value);
-      }
+      if (!__instance.ShouldAnalogInput() || !__instance.ControlWheels)
+        return;
+
+      var analogInput = AnalogGridControlSession.Instance;
+      if (analogInput.BrakeForce == 0f)
+        return;
+
+      if (Sync.IsServer || analogInput.AnalogWheelsAvailable)
+        __instance.GridWheels?.SetBrakingForce(analogInput.BrakeForce);
     }
     
   }
