@@ -139,11 +139,11 @@ namespace AnanaceDev.AnalogGridControl.GUI
       usableArea.Size = new Vector2(usableArea.Size.X, usableArea.Size.Y - inputLabel.Size.Y - outputLabel.Size.Y - spacer.Y * 2);
 
       outputTabs.Position = new Vector2(bottomRight.X - spacer.X, confirmButton.GetCoordTopLeftFromAligned().Y - spacer.Y);
-      outputTabs.Size = new Vector2(outputTabs.Size.X, usableArea.Size.Y * 0.4f);
+      outputTabs.Size = new Vector2(outputTabs.Size.X, usableArea.Size.Y * 0.3f);
 
       outputLabel.PositionAbove(outputTabs);
 
-      inputTabs.Size = new Vector2(inputTabs.Size.X, usableArea.Size.Y * 0.5f);
+      inputTabs.Size = new Vector2(inputTabs.Size.X, usableArea.Size.Y * 0.6f);
       inputTabs.PositionAbove(outputLabel);
 
       inputLabel.PositionAbove(inputTabs);
@@ -180,6 +180,11 @@ namespace AnanaceDev.AnalogGridControl.GUI
       axisChoice.SelectItemByKey((long)Bind.InputAxis.Value, false);
       combinedSize += axisChoice.Size.Y + this.GetOptimalSpacer();
 
+      var invertLabel = new MyGuiControlLabel(text: "Invert", originAlign: MyGuiDrawAlignEnum.HORISONTAL_RIGHT_AND_VERTICAL_TOP);
+      var invertCheckbox = new MyGuiControlCheckbox(isChecked: Bind.InputAxisInvert, originAlign: MyGuiDrawAlignEnum.HORISONTAL_LEFT_AND_VERTICAL_TOP);
+      invertCheckbox.IsCheckedChanged += (_) => Bind.InputAxisInvert = invertCheckbox.IsChecked;
+      combinedSize += invertCheckbox.Size.Y + this.GetOptimalSpacer();
+
       var deadzoneLabel = new MyGuiControlLabel(text: "Deadzone", originAlign: MyGuiDrawAlignEnum.HORISONTAL_RIGHT_AND_VERTICAL_TOP);
       var deadzoneChoice = new MyGuiControlSlider(labelText: "{0}", labelDecimalPlaces: 2, labelSpaceWidth: 0.05f, showLabel: true, defaultValue: Bind.Deadzone, originAlign: MyGuiDrawAlignEnum.HORISONTAL_LEFT_AND_VERTICAL_TOP);
 
@@ -208,11 +213,14 @@ namespace AnanaceDev.AnalogGridControl.GUI
 
       var layout = new MyLayoutTable(page, page.Size * -0.5f + spacer, new Vector2(page.Size.X - spacer.X * 2, combinedSize));
       layout.SetColumnWidthsNormalized(0.25f, 0.75f);
-      layout.SetRowHeightsNormalized(0.3f, 0.3f, 0.3f);
+      layout.SetRowHeightsNormalized(0.25f, 0.25f, 0.25f, 0.25f);
 
       int row = 0;
       layout.Add(axisLabel, MyAlignH.Right, MyAlignV.Center, row, 0);
       layout.AddWithSize(axisChoice, MyAlignH.Left, MyAlignV.Center, row++, 1);
+
+      layout.Add(invertLabel, MyAlignH.Right, MyAlignV.Center, row, 0);
+      layout.AddWithSize(invertCheckbox, MyAlignH.Left, MyAlignV.Center, row++, 1);
 
       layout.Add(deadzoneLabel, MyAlignH.Right, MyAlignV.Center, row, 0);
       layout.AddWithSize(deadzoneChoice, MyAlignH.Left, MyAlignV.Center, row++, 1);
@@ -348,25 +356,17 @@ namespace AnanaceDev.AnalogGridControl.GUI
       else
         axisChoice.SelectItemByIndex(0);
       combinedSize += axisChoice.Size.Y + this.GetOptimalSpacer();
-
-      var invertLabel = new MyGuiControlLabel(text: "Invert", originAlign: MyGuiDrawAlignEnum.HORISONTAL_RIGHT_AND_VERTICAL_TOP);
-      var invertCheckbox = new MyGuiControlCheckbox(isChecked: Bind.MappingAxisInvert, originAlign: MyGuiDrawAlignEnum.HORISONTAL_LEFT_AND_VERTICAL_TOP);
-      invertCheckbox.IsCheckedChanged += (_) => Bind.MappingAxisInvert = invertCheckbox.IsChecked;
-      combinedSize += invertCheckbox.Size.Y + this.GetOptimalSpacer();
 #endregion
 
 #region Layout
       var spacer = this.GetOptimalSpacerVector();
       var layout = new MyLayoutTable(page, page.Size * -0.5f + spacer, new Vector2(page.Size.X - spacer.X * 2, combinedSize));
       layout.SetColumnWidthsNormalized(0.25f, 0.75f);
-      layout.SetRowHeightsNormalized(0.5f, 0.5f);
+      layout.SetRowHeightsNormalized(1.0f);
 
       int row = 0;
       layout.Add(axisChoiceLabel, MyAlignH.Right, MyAlignV.Center, row, 0);
       layout.AddWithSize(axisChoice, MyAlignH.Left, MyAlignV.Center, row++, 1);
-
-      layout.Add(invertLabel, MyAlignH.Right, MyAlignV.Center, row, 0);
-      layout.AddWithSize(invertCheckbox, MyAlignH.Left, MyAlignV.Center, row++, 1);
 #endregion
     }
 
