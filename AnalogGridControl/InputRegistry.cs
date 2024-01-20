@@ -22,12 +22,12 @@ namespace AnanaceDev.AnalogGridControl
 
     public bool HasDevice(DeviceInstance device)
     {
-      return Devices.Any((reg) => reg.DeviceName == device.InstanceName || reg.DeviceUUID == device.InstanceGuid);
+      return Devices.Any((reg) => reg.DeviceName == device.InstanceName && reg.DeviceUUID == device.InstanceGuid);
     }
 
     public InputDevice GetDevice(DeviceInstance device)
     {
-      return Devices.First((reg) => reg.DeviceName == device.InstanceName || reg.DeviceUUID == device.InstanceGuid);
+      return Devices.First((reg) => reg.DeviceName == device.InstanceName && reg.DeviceUUID == device.InstanceGuid);
     }
 
     public void Cleanup()
