@@ -60,11 +60,6 @@ namespace AnanaceDev.AnalogGridControl
       _Inputs.Add(device);
 
       device.OnUnacquired += (_) => {
-        // Clear input vectors in case they were fed by the lost device,
-        // they will be rebuilt the next tick if another device feeds them
-        _MovementVector = Vector3.Zero;
-        _RotationVector = Vector3.Zero;
-
         // Stop all currently active action binds fed by the device
         device.Binds
           .Where(b => b.IsActionMapping && b.IsActive)
@@ -78,6 +73,9 @@ namespace AnanaceDev.AnalogGridControl
     {
       _LastActions = _Actions;
       _Actions = GameAction.None;
+
+      _MovementVector = Vector3.Zero;
+      _RotationVector = Vector3.Zero;
 
       foreach (var device in _Inputs)
       {
@@ -101,15 +99,31 @@ namespace AnanaceDev.AnalogGridControl
             float value = mapping.Value;
             switch (mapping.MappingAxis)
             {
-              case GameAxis.StrafeForward: _MovementVector.Z = value * ForwardMult; break;
-              case GameAxis.StrafeForwardBackward: _MovementVector.Z = (value - 0.5f) * 2; break;
+              case GameAxis.StrafeForward: value *= ForwardMult; break;
+              case GameAxis.StrafeForwardBackward:
+              case GameAxis.StrafeLeftRight:
+              case GameAxis.StrafeUpDown:
+                value = (value - 0.5f) * 2;
+                break;
 
-              case GameAxis.StrafeLeftRight: _MovementVector.X = (value - 0.5f) * 2; break;
-              case GameAxis.StrafeUpDown: _MovementVector.Y = (value - 0.5f) * 2; break;
+              // Pitch in SE is inverted compared to how joysticks usually handle it
+              case GameAxis.TurnPitch: value = (value - 0.5f) * -40; break;
+              case GameAxis.TurnYaw:
+              case GameAxis.TurnRoll:
+                value = (value - 0.5f) * 40;
+                break;
+            }
+            
+            switch (mapping.MappingAxis)
+            {
+              case GameAxis.StrafeForward:
+              case GameAxis.StrafeForwardBackward: _MovementVector.Z = Math.Abs(value) > Math.Abs(_MovementVector.Z) ? value : _MovementVector.Z; break;
+              case GameAxis.StrafeLeftRight: _MovementVector.X = Math.Abs(value) > Math.Abs(_MovementVector.X) ? value : _MovementVector.X; break;
+              case GameAxis.StrafeUpDown: _MovementVector.Y = Math.Abs(value) > Math.Abs(_MovementVector.Y) ? value : _MovementVector.Y; break;
 
-              case GameAxis.TurnPitch: _RotationVector.X = (value - 0.5f) * -40; break;
-              case GameAxis.TurnYaw: _RotationVector.Y = (value - 0.5f) * 40; break;
-              case GameAxis.TurnRoll: _RotationVector.Z = (value - 0.5f) * 40; break;
+              case GameAxis.TurnPitch: _RotationVector.X = Math.Abs(value) > Math.Abs(_RotationVector.X) ? value : _RotationVector.X; break;
+              case GameAxis.TurnYaw: _RotationVector.Y = Math.Abs(value) > Math.Abs(_RotationVector.Y) ? value : _RotationVector.Y; break;
+              case GameAxis.TurnRoll: _RotationVector.Z = Math.Abs(value) > Math.Abs(_RotationVector.Z) ? value : _RotationVector.Z; break;
             }
           }
 
