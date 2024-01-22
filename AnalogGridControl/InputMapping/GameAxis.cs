@@ -1,4 +1,3 @@
-using System.Reflection;
 using AnanaceDev.AnalogGridControl.Util;
 
 namespace AnanaceDev.AnalogGridControl.InputMapping
@@ -17,7 +16,7 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
     [EnumDescription("Strafe Up/Down")]
     StrafeUpDown,
 
-    [EnumDescription("Brake")]
+    [EnumDescription("Brake (wheels)")]
     Brake,
 
     [EnumDescription("Pitch")]
@@ -26,35 +25,6 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
     TurnYaw,
     [EnumDescription("Roll")]
     TurnRoll
-  }
-
-  public static class GameAxisExtension
-  {
-    public static string GetHumanReadableName(this GameAxis axis)
-    {
-      MemberInfo[] memInfo = typeof(GameAxis).GetMember(axis.ToString());
-      if (memInfo != null && memInfo.Length > 0)
-      {
-        object[] attrs = memInfo[0].GetCustomAttributes(typeof(EnumDescriptionAttribute), false);
-        if (attrs != null && attrs.Length > 0)
-          return ((EnumDescriptionAttribute)attrs[0]).Name;
-      }
-
-      return axis.ToString();
-    }
-
-    public static string GetDescription(this GameAxis axis)
-    {
-      MemberInfo[] memInfo = typeof(GameAxis).GetMember(axis.ToString());
-      if (memInfo == null || memInfo.Length == 0)
-        return null;
-
-      object[] attrs = memInfo[0].GetCustomAttributes(typeof(EnumDescriptionAttribute), false);
-      if (attrs == null || attrs.Length == 0)
-        return null;
-
-      return ((EnumDescriptionAttribute)attrs[0]).Description;
-    }
   }
 
 }

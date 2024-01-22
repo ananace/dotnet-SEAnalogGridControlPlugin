@@ -1,12 +1,11 @@
-using System;
-using System.Text;
 using AnanaceDev.AnalogGridControl.InputMapping;
 using AnanaceDev.AnalogGridControl.Util;
-using Sandbox.Graphics;
 using Sandbox.Graphics.GUI;
+using Sandbox.Graphics;
 using SharpDX.DirectInput;
-using VRage;
+using System;
 using VRage.Utils;
+using VRage;
 using VRageMath;
 
 namespace AnanaceDev.AnalogGridControl.GUI.Dialogs

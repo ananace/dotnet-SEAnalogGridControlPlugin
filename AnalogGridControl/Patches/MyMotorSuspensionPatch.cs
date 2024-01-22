@@ -1,4 +1,3 @@
-using System;
 using AnanaceDev.AnalogGridControl.Util;
 using HarmonyLib;
 using Havok;

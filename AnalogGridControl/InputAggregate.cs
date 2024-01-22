@@ -1,9 +1,9 @@
 using AnanaceDev.AnalogGridControl.InputMapping;
 using AnanaceDev.AnalogGridControl.Util;
 using SharpDX.DirectInput;
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 using VRageMath;
 
 namespace AnanaceDev.AnalogGridControl

@@ -1,5 +1,3 @@
-using System;
-using System.Reflection;
 using AnanaceDev.AnalogGridControl.Util;
 
 namespace AnanaceDev.AnalogGridControl.InputMapping
@@ -61,41 +59,6 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
     ToolbarActionNext = 1 << 25,
     [EnumDescription("Previous Toolbar Action", "Nota Bene; This will currently both switch the highlighted action as well as trigger it")]
     ToolbarActionPrev = 1 << 26,
-  }
-
-  public static class GameActionExtension
-  {
-    public static string Wordify(this GameAction action)
-    {
-      var rex = new System.Text.RegularExpressions.Regex("(?<=[a-z])(?<x>[A-Z0-9])|(?<=.)(?<x>[A-Z0-9])(?=[a-z])");
-      return rex.Replace(action.ToString() , " ${x}");
-    }
-
-    public static string GetHumanReadableName(this GameAction action)
-    {
-      MemberInfo[] memInfo = typeof(GameAction).GetMember(action.ToString());
-      if (memInfo != null && memInfo.Length > 0)
-      {
-        object[] attrs = memInfo[0].GetCustomAttributes(typeof(EnumDescriptionAttribute), false);
-        if (attrs != null && attrs.Length > 0)
-          return ((EnumDescriptionAttribute)attrs[0]).Name;
-      }
-
-      return action.Wordify();
-    }
-
-    public static string GetDescription(this GameAction action)
-    {
-      MemberInfo[] memInfo = typeof(GameAction).GetMember(action.ToString());
-      if (memInfo == null || memInfo.Length == 0)
-        return null;
-
-      object[] attrs = memInfo[0].GetCustomAttributes(typeof(EnumDescriptionAttribute), false);
-      if (attrs == null || attrs.Length == 0)
-        return null;
-
-      return ((EnumDescriptionAttribute)attrs[0]).Description;
-    }
   }
 
 }

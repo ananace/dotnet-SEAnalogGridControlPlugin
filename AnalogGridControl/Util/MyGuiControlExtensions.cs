@@ -1,5 +1,5 @@
-using System;
 using Sandbox.Graphics.GUI;
+using System;
 using VRage.Utils;
 using VRageMath;
 

@@ -1,11 +1,11 @@
 using AnanaceDev.AnalogGridControl.InputMapping;
-using System;
-using System.Collections.Generic;
-using System.Xml.Serialization;
-using SharpDX.DirectInput;
 using AnanaceDev.AnalogGridControl.Util;
+using SharpDX.DirectInput;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Serialization;
+using System;
 
 namespace AnanaceDev.AnalogGridControl
 {

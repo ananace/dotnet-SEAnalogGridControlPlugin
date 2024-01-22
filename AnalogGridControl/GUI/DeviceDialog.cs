@@ -1,8 +1,7 @@
-using System.Linq;
-using System.Text;
 using AnanaceDev.AnalogGridControl.Util;
-using Sandbox;
 using Sandbox.Graphics.GUI;
+using Sandbox;
+using System.Text;
 using VRage.Game;
 using VRage.Utils;
 using VRageMath;

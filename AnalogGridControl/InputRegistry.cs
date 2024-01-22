@@ -1,9 +1,9 @@
-using System;
+using AnanaceDev.AnalogGridControl.Util;
+using SharpDX.DirectInput;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Serialization;
-using AnanaceDev.AnalogGridControl.Util;
-using SharpDX.DirectInput;
+using System;
 
 namespace AnanaceDev.AnalogGridControl
 {

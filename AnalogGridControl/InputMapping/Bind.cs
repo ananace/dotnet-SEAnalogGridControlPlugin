@@ -1,10 +1,10 @@
-using System;
-using System.Text;
-using System.Xml;
-using System.Xml.Schema;
-using System.Xml.Serialization;
 using AnanaceDev.AnalogGridControl.Util;
 using SharpDX.DirectInput;
+using System.Text;
+using System.Xml.Schema;
+using System.Xml.Serialization;
+using System.Xml;
+using System;
 
 namespace AnanaceDev.AnalogGridControl.InputMapping
 {
@@ -20,8 +20,9 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
     public GameAxis? MappingAxis { get; set; } = null;
     public GameAction? MappingAction { get; set; } = null;
 
-    public float Value { get; private set; }
-    public bool IsActive { get; private set; }
+    public float Value { get; private set; } = 0f;
+    public bool IsActive { get; private set; } = false;
+
     public bool IsValid { get { 
       return (InputAxis.HasValue || InputButton.HasValue || InputHatAxis.HasValue)
         && (MappingAxis.HasValue || MappingAction.HasValue);

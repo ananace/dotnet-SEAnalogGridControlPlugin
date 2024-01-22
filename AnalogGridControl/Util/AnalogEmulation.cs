@@ -1,8 +1,8 @@
 namespace AnanaceDev.AnalogGridControl.Util
 {
+
   public static class AnalogEmulation
   {
-
     public static bool ShouldTick(float input, int tick, int steps = 10)
     {
       if (input <= 0.0f)
@@ -22,4 +22,5 @@ namespace AnanaceDev.AnalogGridControl.Util
       return false;
     }
   }
+
 }

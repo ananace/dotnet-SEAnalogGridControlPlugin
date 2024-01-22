@@ -1,6 +1,6 @@
-using System;
 using AnanaceDev.AnalogGridControl.Util;
 using Sandbox.Graphics.GUI;
+using System;
 using VRage.Utils;
 using VRageMath;
 

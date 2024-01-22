@@ -1,14 +1,14 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using AnanaceDev.AnalogGridControl.InputMapping;
+﻿using AnanaceDev.AnalogGridControl.InputMapping;
 using AnanaceDev.AnalogGridControl.Util;
 using Sandbox.Game.Multiplayer;
 using Sandbox.ModAPI;
-using VRage.Game;
+using System.IO;
+using System.Linq;
+using System;
 using VRage.Game.Components;
-using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
+using VRage.Game.ModAPI;
+using VRage.Game;
 using VRageMath;
 
 namespace AnanaceDev.AnalogGridControl
