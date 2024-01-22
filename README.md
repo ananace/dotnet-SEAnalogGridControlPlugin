@@ -14,9 +14,10 @@ To Do;
 - [X] Working analog input
   - [X] Thrusters
   - [X] Gyros
-  - [X] Wheels (Currently emulating analog results)
-    - [ ] Proper - multiplayer-compatible - analog input (will require a patch)
-  - [X] Semi-functional fallback without Harmony patch (no support for wheels)
+  - [X] Wheels
+    - [X] Proper - multiplayer-compatible - analog input patch
+    - [X] Fallback using pulsed input on servers without plugin
+  - [X] Semi-functional fallback without Harmony patch (no real support for wheels or multiplayer)
 - [X] Per-device mappings
 - [X] POV hats
 - [X] HOTAS/Wheel support
