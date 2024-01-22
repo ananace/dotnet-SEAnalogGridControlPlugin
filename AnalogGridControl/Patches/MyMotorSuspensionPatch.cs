@@ -26,6 +26,24 @@ namespace AnanaceDev.AnalogGridControl.Patches
     }
   }
 
+  [HarmonyPatch(typeof(MyMotorSuspension), "ComputeRequiredPowerInput")]
+  public static class MyMotorSuspensionPowerPatch
+  {
+    public static void Postfix(MyMotorSuspension __instance, ref float __result)
+    {
+      if (__result == 0f || __instance.PropulsionOverride != 0f)
+        return;
+
+      var input = __instance.GetWheelSystem()?.GetPropulsionStrength() ?? 0f;
+      if (input == 0f)
+        return;
+
+      float baseRequired = __instance.BlockDefinition.RequiredIdlePowerInput;
+      float before = __result;
+      __result = baseRequired + (before - baseRequired) * input;
+    }
+  }
+
   [HarmonyPatch(typeof(MyMotorSuspension), nameof(MyMotorSuspension.UpdateBrake))]
   public static class MyMotorSuspensionBrakePatch
   {
