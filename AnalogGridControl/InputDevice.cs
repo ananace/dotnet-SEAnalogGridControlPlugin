@@ -56,8 +56,8 @@ namespace AnanaceDev.AnalogGridControl
 
     [XmlIgnore]
     public JoystickState CurrentState { get; private set; }
-    [XmlIgnore]
-    public JoystickState LastState { get; private set; }
+    JoystickState _LastState, _InitialState;
+    List<DeviceAxis> _PotentiallyBogusAxes = new List<DeviceAxis>();
 
     public event Action<InputDevice> OnAcquired;
     public event Action<InputDevice> OnUnacquired;
@@ -127,7 +127,8 @@ namespace AnanaceDev.AnalogGridControl
       if (IsValid)
       {
         Joystick.Acquire();
-        LastState = CurrentState = Joystick.GetCurrentState();
+        _InitialState = _LastState = CurrentState = Joystick.GetCurrentState();
+        _PotentiallyBogusAxes = Axes.ToList();
         IsAcquired = true;
         MyPluginLog.Info($"{DeviceName} - Acquired");
 
@@ -176,6 +177,8 @@ namespace AnanaceDev.AnalogGridControl
       return DefaultRange;
     }
 
+    public bool IsPotentiallyBogus(DeviceAxis axis) => _PotentiallyBogusAxes.Contains(axis);
+
     public bool Update(bool runBinds = true)
     {
       if (!IsValid || !IsAcquired)
@@ -183,15 +186,23 @@ namespace AnanaceDev.AnalogGridControl
 
       try
       {
-        LastState = CurrentState;
+        _LastState = CurrentState;
         CurrentState = Joystick.GetCurrentState();
+
+        _PotentiallyBogusAxes.RemoveAll(axis => CurrentState.GetAxisValue(axis) != _InitialState.GetAxisValue(axis));
+
         if (!runBinds)
           return false;
 
         bool hasData = false;
         foreach (var bind in Binds)
+        {
+          if (bind.InputAxis.HasValue && IsPotentiallyBogus(bind.InputAxis.Value))
+            continue;
+
           if (bind.Apply(CurrentState, this))
             hasData = true;
+        }
         return hasData;
       }
       catch (Exception ex)
@@ -212,13 +223,13 @@ namespace AnanaceDev.AnalogGridControl
       Update(false);
 
       for (int i = 0; i < Buttons; ++i)
-        if (CurrentState.Buttons[i] && !LastState.Buttons[i])
+        if (CurrentState.Buttons[i] && !_LastState.Buttons[i])
           return new Bind() { InputButton = i };
 
       foreach (var axis in Axes)
       {
         var curVal = CurrentState.GetAxisValueNormalized(axis, GetRange(axis));
-        var oldVal = LastState.GetAxisValueNormalized(axis, GetRange(axis));
+        var oldVal = _LastState.GetAxisValueNormalized(axis, GetRange(axis));
 
         if ((curVal < 0.25f && oldVal > 0.25f) || (curVal > 0.75f && oldVal < 0.75f))
           return new Bind() { InputAxis = axis };
@@ -226,7 +237,7 @@ namespace AnanaceDev.AnalogGridControl
 
       for (int i = 0; i < POVHats; ++i)
         foreach (var axis in Enum.GetValues(typeof(DeviceHatAxis)).Cast<DeviceHatAxis>())
-          if (CurrentState.GetPOVAxis(axis, i) && !LastState.GetPOVAxis(axis, i))
+          if (CurrentState.GetPOVAxis(axis, i) && !_LastState.GetPOVAxis(axis, i))
             return new Bind() { InputHatAxis = axis, InputHat = i };
 
       return null;
