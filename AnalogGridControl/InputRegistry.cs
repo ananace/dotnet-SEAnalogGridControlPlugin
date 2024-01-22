@@ -39,9 +39,10 @@ namespace AnanaceDev.AnalogGridControl
       return attempted;
     }
 
-    public bool DiscoverDevices(DirectInput dinput, bool rediscover = false)
+    public bool DiscoverDevices(DirectInput dinput, bool rediscover = false, bool verbose = true)
     {
-      MyPluginLog.Info("Checking for attached DirectInput devices...");
+      if (verbose)
+        MyPluginLog.Info("Checking for attached DirectInput devices...");
       var devices = dinput.GetDevices(DeviceClass.GameControl, DeviceEnumerationFlags.AttachedOnly) as IReadOnlyList<DeviceInstance>;
 
       bool dirty = false;
@@ -50,12 +51,14 @@ namespace AnanaceDev.AnalogGridControl
         InputDevice dev;
         if (Plugin.InputRegistry.HasDevice(device))
         {
-          MyPluginLog.Info($"- Existing device '{device.InstanceName}' found.");
+          if (verbose)
+            MyPluginLog.Info($"- Existing device '{device.InstanceName}' found.");
           dev = Plugin.InputRegistry.GetDevice(device);
         }
         else
         {
-          MyPluginLog.Info($"- New device '{device.InstanceName}' found.");
+          if (verbose)
+            MyPluginLog.Info($"- New device '{device.InstanceName}' found.");
           dev = new InputDevice();
         }
 

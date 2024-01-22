@@ -55,7 +55,7 @@ namespace AnanaceDev.AnalogGridControl
     public static int MaxPOVHats => 4;
 
     [XmlIgnore]
-    public JoystickState CurrentState { get; private set; }
+    public JoystickState CurrentState { get; private set; } = new JoystickState();
     JoystickState _LastState, _InitialState;
     List<DeviceAxis> _PotentiallyBogusAxes = new List<DeviceAxis>();
 
