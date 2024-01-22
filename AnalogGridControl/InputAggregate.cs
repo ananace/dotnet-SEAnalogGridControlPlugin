@@ -58,20 +58,37 @@ namespace AnanaceDev.AnalogGridControl
 
     public void RegisterInput(InputDevice device)
     {
+      if (_Inputs.Contains(device))
+        return;
+
       MyPluginLog.Debug($"InputAggregate - Registering {device.DeviceName}");
       _Inputs.Add(device);
 
-      device.OnUnacquired += (_) => {
-        // Stop all currently active action binds fed by the device
-        device.Binds
-          .Where(b => b.IsActionMapping && b.IsActive)
-          .ForEach(b => {
-            _Actions &= ~b.MappingAction.Value;
-          });
-      };
+      device.OnUnacquired += OnDeviceUnaquired;
     }
 
-    public void UpdateInputs()
+    public void UnregisterInput(InputDevice device)
+    {
+      if (!_Inputs.Contains(device))
+        return;
+
+      MyPluginLog.Debug($"InputAggregate - Unregistering {device.DeviceName}");
+      _Inputs.Remove(device);
+
+      device.OnUnacquired -= OnDeviceUnaquired;
+    }
+
+    void OnDeviceUnaquired(InputDevice device)
+    {
+      // Stop all currently active action binds fed by the device
+      device.Binds
+        .Where(b => b.IsActionMapping && b.IsActive)
+        .ForEach(b => {
+          _Actions &= ~b.MappingAction.Value;
+        });
+    }
+
+    public void Reset()
     {
       _LastActions = _Actions;
       _Actions = GameAction.None;
@@ -79,6 +96,11 @@ namespace AnanaceDev.AnalogGridControl
       _MovementVector = Vector3.Zero;
       _RotationVector = Vector3.Zero;
       _BrakeForce = 0;
+    }
+
+    public void UpdateInputs()
+    {
+      Reset();
 
       foreach (var device in _Inputs)
       {

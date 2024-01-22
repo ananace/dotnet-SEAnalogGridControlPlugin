@@ -23,10 +23,7 @@ namespace AnanaceDev.AnalogGridControl.Util
         return false;
 
       var analogInput = AnalogGridControlSession.Instance;
-      if (!analogInput.IsAnalogInputActive || analogInput.CurrentControllable != controller)
-        return false;
-
-      if (analogInput.CurrentPlayer?.Character != controller.Pilot)
+      if (!analogInput.IsAnalogInputActive || analogInput.CurrentControllable != controller || analogInput.CurrentPlayer?.Character != controller.Pilot)
         return false;
 
       return true;

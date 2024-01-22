@@ -56,7 +56,7 @@ namespace AnanaceDev.AnalogGridControl
 
     [XmlIgnore]
     public JoystickState CurrentState { get; private set; } = new JoystickState();
-    JoystickState _LastState, _InitialState;
+    JoystickState _LastState, _InitialState = null;
     List<DeviceAxis> _PotentiallyBogusAxes = new List<DeviceAxis>();
 
     public event Action<InputDevice> OnAcquired;
@@ -127,9 +127,15 @@ namespace AnanaceDev.AnalogGridControl
       if (IsValid)
       {
         Joystick.Acquire();
-        _InitialState = _LastState = CurrentState = Joystick.GetCurrentState();
+
+        // Set up initial joystick state data after acquire
+        _LastState = CurrentState = Joystick.GetCurrentState();
         _PotentiallyBogusAxes = Axes.ToList();
         IsAcquired = true;
+
+        // Ensure binds are clean after acquire
+        ResetBinds();
+
         MyPluginLog.Info($"{DeviceName} - Acquired");
 
         OnAcquired?.Invoke(this);
@@ -170,6 +176,11 @@ namespace AnanaceDev.AnalogGridControl
       Binds.RemoveAll(bind => !bind.IsValid);
     }
 
+    public void ResetBinds()
+    {
+      Binds.ForEach(bind => bind.Reset());
+    }
+
     public InputRange GetRange(DeviceAxis axis)
     {
       if (_Ranges.ContainsKey(axis))
@@ -188,6 +199,8 @@ namespace AnanaceDev.AnalogGridControl
       {
         _LastState = CurrentState;
         CurrentState = Joystick.GetCurrentState();
+        if (_InitialState == null)
+          _InitialState = CurrentState;
 
         _PotentiallyBogusAxes.RemoveAll(axis => CurrentState.GetAxisValue(axis) != _InitialState.GetAxisValue(axis));
 
@@ -197,6 +210,8 @@ namespace AnanaceDev.AnalogGridControl
         bool hasData = false;
         foreach (var bind in Binds)
         {
+          bind.Reset();
+
           if (bind.InputAxis.HasValue && IsPotentiallyBogus(bind.InputAxis.Value))
             continue;
 

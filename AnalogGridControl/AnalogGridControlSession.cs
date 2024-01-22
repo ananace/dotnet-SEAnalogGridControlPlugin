@@ -74,6 +74,7 @@ namespace AnanaceDev.AnalogGridControl
 
       if (CurrentPlayer != null)
         CurrentPlayer.Controller.ControlledEntityChanged -= UpdateCurrentControlUnit;
+
       Instance = null;
     }
 
@@ -88,8 +89,9 @@ namespace AnanaceDev.AnalogGridControl
       {
         MyPluginLog.Debug("AnalogGridControlSession - Found player");
 
-        // Ensure all input devices are primed
-        Input.Devices.ForEach(dev => dev.Update(false));
+        // Ensure all input devices are primed and clean
+        Input.Devices.ForEach(dev => { dev.Update(false); dev.ResetBinds(); });
+
         CurrentPlayer = Session.Player;
         CurrentPlayer.Controller.ControlledEntityChanged += UpdateCurrentControlUnit;
         UpdateCurrentControlUnit(null, CurrentPlayer.Controller.ControlledEntity);
@@ -101,23 +103,31 @@ namespace AnanaceDev.AnalogGridControl
         }
       }
 
+      if (CurrentTick % 1000 == 0)
+      {
+        bool verbose = false;
+        if (Input.Devices.Any(dev => !dev.IsInitialized))
+        {
+          verbose = true;
+          MyPluginLog.Info("Invalid devices in input aggregate, attempting rescan...");
+        }
+
+        if (Plugin.InputRegistry.DiscoverDevices(Input.DInput, true, verbose))
+        {
+          Plugin.InputRegistry.Devices.ForEach(dev => Input.RegisterInput(dev));
+          Input.Devices.Where(dev => !dev.IsAcquired).ForEach((dev => dev.Acquire()));
+        }
+
+        // Devices that are still lost after an attempted re-acquire are dropped until next full rescan
+        Input.Devices.Where(dev => !dev.IsInitialized).ToList().ForEach(dev => Input.UnregisterInput(dev));
+      }
+
       if (!Session.IsServer && Plugin.InputRegistry.InputThrottleMultiplayerSpecified && (CurrentTick % Plugin.InputThrottleMultiplayer) != 0)
         return;
-
-      if (CurrentTick % 1000 == 0 && Input.Devices.Any(dev => !dev.IsInitialized))
-      {
-        MyPluginLog.Info("Invalid devices in input aggregate, attempting rescan...");
-        if (Plugin.InputRegistry.DiscoverDevices(Input.DInput, true))
-          Input.Devices.Where(dev => !dev.IsAcquired).ForEach((dev => dev.Acquire()));
-      }
 
       Input.UpdateInputs();
 
       UpdateCurrentGridInputs();
-    }
-
-    public override void Simulate()
-    {
     }
 
     private void UpdateCurrentControlUnit(IMyControllableEntity oldControlUnit, IMyControllableEntity newControlUnit)

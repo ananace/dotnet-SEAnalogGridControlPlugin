@@ -28,12 +28,10 @@ To Do;
   - [ ] Stepped toolbar action selection without activating
         (Will require another patch)
   - [ ] ...
-- [ ] Handle devices disappearing and (re)appearing
-      (Unimplemented parts currently require a game restart)
+- [X] Handle devices disappearing and (re)appearing
   - [X] Handle devices disappearing during gameplay
-  - [X] Handle devices then reappearing during gameplay
-        (Currently not graceful in handling of devices that never reappear again)
-  - [ ] Handle new devices appearing during gameplay
+  - [X] Handle those devices then reappearing during gameplay
+  - [X] Handle new devices appearing during gameplay
 - [ ] Handle DInput giving bogus output on device axises until they've been actuated
 - [ ] Ensure multiplayer works
 - [ ] Gamepad interoperability(?)
