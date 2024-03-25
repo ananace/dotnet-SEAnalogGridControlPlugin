@@ -75,7 +75,8 @@ namespace AnanaceDev.AnalogGridControl
       if (CurrentPlayer != null)
         CurrentPlayer.Controller.ControlledEntityChanged -= UpdateCurrentControlUnit;
 
-      Instance = null;
+      if (Instance == this)
+        Instance = null;
     }
 
     public override void UpdateBeforeSimulation()
