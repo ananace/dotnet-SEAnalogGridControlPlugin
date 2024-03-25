@@ -18,8 +18,7 @@ namespace AnanaceDev.AnalogGridControl
   public class AnalogGridControlSession : MySessionComponentBase
   {
     public static AnalogGridControlSession Instance;
-
-    public InputAggregate Input = new InputAggregate();
+    public InputAggregate Input => Plugin.InputAggregate;
 
     public bool IsAnalogInputActive => Input.IsAnalogInputActive;
     public Vector3 MovementVector => Input.MovementVector;
@@ -38,23 +37,6 @@ namespace AnanaceDev.AnalogGridControl
 
     public override void Init(MyObjectBuilder_SessionComponent _sessionComponent)
     {
-      MyPluginLog.Debug("AnalogGridControlSession - Init");
-
-      Input.DInput = Plugin.DInput;
-      foreach (var dev in Plugin.InputRegistry.Devices)
-      {
-        dev.Acquire();
-
-        if (dev.IsAcquired)
-          Input.RegisterInput(dev);
-      }
-
-      Input.ActionTriggered += OnActionTriggered;
-      Input.ActionBegin += OnActionBegin;
-      Input.ActionEnd += OnActionEnd;
-
-      MyPluginLog.Debug("AnalogGridControlSession - Init complete");
-
       if (Sync.IsServer)
         AnalogServerVersion = Plugin.NetworkVersion;
     }
@@ -62,6 +44,10 @@ namespace AnanaceDev.AnalogGridControl
     public override void LoadData()
     {
       Instance = this;
+
+      Input.ActionTriggered += OnActionTriggered;
+      Input.ActionBegin += OnActionBegin;
+      Input.ActionEnd += OnActionEnd;
 
       if (Sync.MultiplayerActive)
         Sandbox.ModAPI.MyModAPIHelper.MyMultiplayer.Static.RegisterSecureMessageHandler(Plugin.Id, OnReceiveAnalogUpdate);
@@ -74,6 +60,10 @@ namespace AnanaceDev.AnalogGridControl
 
       if (CurrentPlayer != null)
         CurrentPlayer.Controller.ControlledEntityChanged -= UpdateCurrentControlUnit;
+
+      Input.ActionTriggered -= OnActionTriggered;
+      Input.ActionBegin -= OnActionBegin;
+      Input.ActionEnd -= OnActionEnd;
 
       if (Instance == this)
         Instance = null;
@@ -104,29 +94,8 @@ namespace AnanaceDev.AnalogGridControl
         }
       }
 
-      if (CurrentTick % 1000 == 0)
-      {
-        bool verbose = false;
-        if (Input.Devices.Any(dev => !dev.IsInitialized))
-        {
-          verbose = true;
-          MyPluginLog.Info("Invalid devices in input aggregate, attempting rescan...");
-        }
-
-        if (Plugin.InputRegistry.DiscoverDevices(Input.DInput, true, verbose))
-        {
-          Plugin.InputRegistry.Devices.ForEach(dev => Input.RegisterInput(dev));
-          Input.Devices.Where(dev => !dev.IsAcquired).ForEach((dev => dev.Acquire()));
-        }
-
-        // Devices that are still lost after an attempted re-acquire are dropped until next full rescan
-        Input.Devices.Where(dev => !dev.IsInitialized).ToList().ForEach(dev => Input.UnregisterInput(dev));
-      }
-
       if (!Session.IsServer && Plugin.InputRegistry.InputThrottleMultiplayerSpecified && (CurrentTick % Plugin.InputThrottleMultiplayer) != 0)
         return;
-
-      Input.UpdateInputs();
 
       UpdateCurrentGridInputs();
     }

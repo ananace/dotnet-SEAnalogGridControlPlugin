@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Xml.Serialization;
 using AnanaceDev.AnalogGridControl.Util;
@@ -22,10 +23,12 @@ namespace AnanaceDev.AnalogGridControl
     public static ushort InputThrottleMultiplayer => InputRegistry.InputThrottleMultiplayer;
     public static bool ControllerPatched = false;
 
+    public static DirectInput DInput = new DirectInput();
     public static InputRegistry InputRegistry = new InputRegistry();
-    public static DirectInput DInput;
+    public static InputAggregate InputAggregate = new InputAggregate();
 
     bool _IsDisposed = false;
+    uint _CurrentTick = 0;
 
     public void Init(object _gameObject)
     {
@@ -35,7 +38,31 @@ namespace AnanaceDev.AnalogGridControl
 
       ReadDevices();
     }
-    public void Update() {}
+
+    public void Update()
+    {
+      _CurrentTick++;
+      if (_CurrentTick % 1000 == 0)
+      {
+        bool verbose = false;
+        if (InputAggregate.Devices.Any(dev => !dev.IsInitialized))
+        {
+          verbose = true;
+          MyPluginLog.Info("Invalid devices in input aggregate, attempting rescan...");
+        }
+
+        if (InputRegistry.DiscoverDevices(DInput, true, verbose))
+        {
+          Plugin.InputRegistry.Devices.ForEach(dev => InputAggregate.RegisterInput(dev));
+          InputAggregate.Devices.Where(dev => !dev.IsAcquired).ForEach((dev => dev.Acquire()));
+        }
+
+        // Devices that are still lost after an attempted re-acquire are dropped until next full rescan
+        InputAggregate.Devices.Where(dev => !dev.IsInitialized).ToList().ForEach(dev => InputAggregate.UnregisterInput(dev));
+      }
+
+      InputAggregate.UpdateInputs();
+    }
     public void Dispose()
     {
       if (_IsDisposed)
@@ -78,9 +105,17 @@ namespace AnanaceDev.AnalogGridControl
 
     void ReadDevices()
     {
-      DInput = new DirectInput();
       if (InputRegistry.DiscoverDevices(DInput))
         SaveMappings();
+      InputAggregate.DInput = DInput;
+
+      foreach (var dev in InputRegistry.Devices)
+      {
+        dev.Acquire();
+
+        if (dev.IsAcquired)
+          InputAggregate.RegisterInput(dev);
+      }
     }
 
     void LoadMappings()
