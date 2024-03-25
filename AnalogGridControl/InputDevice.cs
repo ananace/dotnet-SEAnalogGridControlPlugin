@@ -28,8 +28,8 @@ namespace AnanaceDev.AnalogGridControl
     [XmlIgnore]
     public bool IsInitialized { get; private set; } = false;
 
+    Dictionary<DeviceAxis, InputRange> _DefaultRanges = new Dictionary<DeviceAxis, InputRange>();
     Dictionary<DeviceAxis, InputRange> _Ranges = new Dictionary<DeviceAxis, InputRange>();
-    public IReadOnlyDictionary<DeviceAxis, InputRange> Ranges => _Ranges;
 
     [XmlIgnore]
     public bool IsValid => DInput != null && Device != null && Joystick != null && IsInitialized;
@@ -42,8 +42,23 @@ namespace AnanaceDev.AnalogGridControl
     public InputRange DefaultRange { get; set; } = new InputRange(ushort.MinValue, ushort.MaxValue);
     [XmlIgnore]
     public bool DefaultRangeSpecified => DefaultRange.Minimum != ushort.MinValue && DefaultRange.Maximum != ushort.MaxValue;
+    
     [XmlIgnore]
     public IReadOnlyDictionary<DeviceAxis, InputRange> Ranges => _Ranges;
+    [XmlArray("Axes"), XmlArrayItem("Range")]
+    public SerializableDeviceRange[] SerializableRanges {
+      get { return _Ranges.Select(axis => new SerializableDeviceRange(axis.Key, axis.Value)).ToArray(); }
+      set {
+        foreach (var loaded in value)
+        {
+          if (!_Ranges.ContainsKey(loaded.Axis))
+            continue;
+
+          var existing = _DefaultRanges[loaded.Axis];
+          _Ranges[loaded.Axis] = new InputRange { Minimum = loaded.RangeMin ?? existing.Minimum, Maximum = loaded.RangeMax ?? existing.Maximum };
+        }
+      }
+    }
 
     [XmlIgnore]
     public IEnumerable<DeviceAxis> Axes => _Ranges.Keys;
@@ -97,10 +112,11 @@ namespace AnanaceDev.AnalogGridControl
             var props = Joystick.GetObjectPropertiesById(obj.ObjectId);
             var range = props.Range;
 
-            _Ranges[(DeviceAxis)axis] = range;
+            _DefaultRanges[(DeviceAxis)axis] = range;
           } catch {}
         }
 
+        _Ranges = _DefaultRanges;
         MyPluginLog.Debug($"{DeviceName} - Has {Buttons} button(s), {POVHats} hat(s), and {Axes.Count()} axis(es); {string.Join(", ", Axes.Select((a) => a.ToString()))}");
       }
       else
