@@ -26,18 +26,10 @@ namespace AnanaceDev.AnalogGridControl.Util
         return false;
 
       var analogInput = AnalogGridControlSession.Instance;
-      if (!analogInput.IsAnalogInputActive || analogInput.CurrentControllable == null)
+      if (!analogInput.CurrentControllable?.ControlWheels ?? false)
         return false;
 
-      if (Sandbox.Game.Gui.MyGuiScreenGamePlay.DisableInput)
-        return false;
-
-      if (!analogInput.CurrentControllable.ControlWheels)
-        return false;
-      if (analogInput.CurrentPlayer != motor.CubeGrid.GridSystems.ControlSystem.GetController().Player)
-        return false;
-
-      return true;
+      return analogInput.CanControl(analogInput.CurrentControllable);
     }
   }
 

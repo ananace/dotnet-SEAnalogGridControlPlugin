@@ -30,7 +30,7 @@ namespace AnanaceDev.AnalogGridControl
     public bool AnalogWheelAvailabilityRequested = false;
 
     public IMyPlayer CurrentPlayer { get; private set; }
-    public IMyCockpit CurrentControllable { get; private set; }
+    public IMyShipController CurrentControllable { get; private set; }
     public IMyCubeGrid CurrentGrid { get; private set; }
 
     public ushort CurrentTick { get; private set; } = 0;
@@ -44,6 +44,7 @@ namespace AnanaceDev.AnalogGridControl
     public override void LoadData()
     {
       Instance = this;
+
 
       Input.ActionTriggered += OnActionTriggered;
       Input.ActionBegin += OnActionBegin;
@@ -66,7 +67,11 @@ namespace AnanaceDev.AnalogGridControl
       Input.ActionEnd -= OnActionEnd;
 
       if (Instance == this)
+      {
+        // Clean the aggregate if ending the session, to not leave active input on resumption
+        Input.Reset();
         Instance = null;
+      }
     }
 
     public override void UpdateBeforeSimulation()
@@ -100,24 +105,35 @@ namespace AnanaceDev.AnalogGridControl
       UpdateCurrentGridInputs();
     }
 
+    public bool CanControl(IMyControllableEntity controllable)
+    {
+      if (AnalogGridControlSession.Instance != this)
+        return false;
+
+      if (Sandbox.Game.Gui.MyGuiScreenGamePlay.DisableInput || !IsAnalogInputActive)
+        return false;
+
+      if (!controllable.ControllerInfo.IsLocallyControlled())
+        return false;
+
+      return true;
+    }
+
     private void UpdateCurrentControlUnit(IMyControllableEntity oldControlUnit, IMyControllableEntity newControlUnit)
     {
       var oldControllable = CurrentControllable;
-      CurrentControllable = newControlUnit as IMyCockpit;
+      CurrentControllable = newControlUnit as IMyShipController;
 
       if (CurrentControllable != null && oldControllable == null)
       {
         CurrentGrid = CurrentControllable?.CubeGrid;
 
-        if (Input != null)
-        {
-          Input.IsAnalogInputActive = Plugin.InputActiveByDefault;
-          MyPluginLog.Debug($"Attached to new grid, analog input active: {Input.IsAnalogInputActive}");
-        }
+        Input.IsAnalogInputActive = Plugin.InputActiveByDefault;
+        MyPluginLog.Debug($"Attached to new grid, analog input active: {Input.IsAnalogInputActive}");
       }
       else if (CurrentControllable == null && oldControllable != null)
       {
-        if (oldControllable is Sandbox.Game.Entities.MyCockpit oldCockpit)
+        if (oldControllable is Sandbox.Game.Entities.MyShipController oldCockpit)
         {
           MyPluginLog.Debug("Detached from grid, clearing old analog state");
 
@@ -141,7 +157,7 @@ namespace AnanaceDev.AnalogGridControl
 
     private void OnActionTriggered(object _sender, GameAction action)
     {
-      if (action == GameAction.SwitchAnalogInputActive && !Plugin.ControllerPatched && !Input.IsAnalogInputActive && CurrentControllable is Sandbox.Game.Entities.MyCockpit cockpit && Sync.IsServer)
+      if (action == GameAction.SwitchAnalogInputActive && !Plugin.ControllerPatched && !Input.IsAnalogInputActive && CurrentControllable is Sandbox.Game.Entities.MyShipController cockpit && Sync.IsServer)
       {
         if (cockpit.EntityThrustComponent != null)
         {
@@ -167,7 +183,7 @@ namespace AnanaceDev.AnalogGridControl
         case GameAction.SwitchLandingGears: CurrentControllable.SwitchLandingGears(); break;
       }
 
-      var CurrentCockpit = CurrentControllable as Sandbox.Game.Entities.MyCockpit;
+      var CurrentCockpit = CurrentControllable as Sandbox.Game.Entities.MyShipController;
       if (CurrentCockpit == null)
         return;
 
@@ -206,7 +222,7 @@ namespace AnanaceDev.AnalogGridControl
       if (CurrentControllable == null || !Input.IsAnalogInputActive)
         return;
 
-      var CurrentCockpit = CurrentControllable as Sandbox.Game.Entities.MyCockpit;
+      var CurrentCockpit = CurrentControllable as Sandbox.Game.Entities.MyShipController;
       if (CurrentCockpit == null)
         return;
 
@@ -223,7 +239,7 @@ namespace AnanaceDev.AnalogGridControl
       if (CurrentControllable == null || !Input.IsAnalogInputActive)
         return;
 
-      var CurrentCockpit = CurrentControllable as Sandbox.Game.Entities.MyCockpit;
+      var CurrentCockpit = CurrentControllable as Sandbox.Game.Entities.MyShipController;
       if (CurrentCockpit == null)
         return;
 
@@ -237,7 +253,7 @@ namespace AnanaceDev.AnalogGridControl
 
     private void UpdateCurrentGridInputs()
     {
-      if (!Input.IsAnalogInputActive ||!(CurrentControllable is Sandbox.Game.Entities.MyCockpit CurrentCockpit))
+      if (!Input.IsAnalogInputActive ||!(CurrentControllable is Sandbox.Game.Entities.MyShipController CurrentCockpit))
         return;
 
       if (CurrentCockpit.ControlWheels)

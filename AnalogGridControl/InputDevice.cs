@@ -29,6 +29,7 @@ namespace AnanaceDev.AnalogGridControl
     public bool IsInitialized { get; private set; } = false;
 
     Dictionary<DeviceAxis, InputRange> _Ranges = new Dictionary<DeviceAxis, InputRange>();
+    public IReadOnlyDictionary<DeviceAxis, InputRange> Ranges => _Ranges;
 
     [XmlIgnore]
     public bool IsValid => DInput != null && Device != null && Joystick != null && IsInitialized;

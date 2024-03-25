@@ -19,14 +19,7 @@ namespace AnanaceDev.AnalogGridControl.Util
       if (AnalogGridControlSession.Instance == null)
         return false;
 
-      if (Sandbox.Game.Gui.MyGuiScreenGamePlay.DisableInput)
-        return false;
-
-      var analogInput = AnalogGridControlSession.Instance;
-      if (!analogInput.IsAnalogInputActive || analogInput.CurrentControllable != controller || analogInput.CurrentPlayer?.Character != controller.Pilot)
-        return false;
-
-      return true;
+      return AnalogGridControlSession.Instance.CanControl(controller);
     }
   }
 
