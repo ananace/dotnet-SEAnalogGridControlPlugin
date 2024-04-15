@@ -31,6 +31,8 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
     public bool IsAxisMapping { get { return MappingAxis.HasValue; } }
     public bool IsActionMapping { get { return MappingAction.HasValue; } }
 
+    public DeadzoneEdge DeadzoneEdge { get; set; } = DeadzoneEdge.Center;
+    public DeadzoneScale DeadzoneScale { get; set; } = DeadzoneScale.Linear;
     public float Deadzone { get; set; } = 0.05f;
     /// Using the formula f(x) = a * x^3 + (1 - a) * x 
     /// 0 is linear, 1 is x^3
@@ -68,12 +70,29 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
         if (InputAxisInvert)
           floatValue = 1.0f - floatValue;
 
-        if (floatValue > 1.0f - Deadzone)
-          floatValue = 1.0f;
-        else if (floatValue > 0.5f - Deadzone / 2 && floatValue < 0.5f + Deadzone / 2)
-          floatValue = 0.5f;
-        else if (floatValue < Deadzone)
-          floatValue = 0.0f;
+        if (DeadzoneEdge.HasFlag(DeadzoneEdge.Center))
+        {
+          if (DeadzoneScale == DeadzoneScale.Linear)
+            floatValue = Math.Abs(floatValue.Value) < Deadzone ? 0 : floatValue;
+          else
+            floatValue = (1 - Deadzone) * floatValue.Value + Deadzone * Math.Sign(floatValue.Value);
+        }
+
+        if (DeadzoneEdge.HasFlag(DeadzoneEdge.Upper))
+        {
+          // if (DeadzoneScale == DeadzoneScale.Linear)
+            floatValue = floatValue.Value >= (1 - Deadzone) ? 1 : floatValue;
+          // else
+          //   floatValue =
+        }
+
+        if (DeadzoneEdge.HasFlag(DeadzoneEdge.Lower))
+        {
+          // if (DeadzoneScale == DeadzoneScale.Linear)
+            floatValue = floatValue.Value <= (Deadzone - 1) ? -1 : floatValue;
+          // else
+          //   floatValue = 
+        }
 
         if (Curve != 0.0f)
         {
@@ -163,6 +182,10 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
           writer.WriteAttributeString("AxisInvert", InputAxisInvert.ToString());
         if (Deadzone != 0.05f)
           writer.WriteAttributeString("Deadzone", Deadzone.ToString());
+        if (DeadzoneEdge != DeadzoneEdge.Center)
+          writer.WriteAttributeString("DeadzoneEdge", DeadzoneEdge.ToString());
+        if (DeadzoneScale != DeadzoneScale.Linear)
+          writer.WriteAttributeString("DeadzoneScale", DeadzoneScale.ToString());
         if (Curve != 0.0f)
           writer.WriteAttributeString("Curve", Curve.ToString());
       }
@@ -193,6 +216,10 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
             InputAxisInvert = bool.Parse(invert);
           if (reader.GetAttribute("Deadzone") is string deadzone)
             Deadzone = float.Parse(deadzone);
+          if (reader.GetAttribute("DeadzoneEdge") is string deadzoneEdge)
+            DeadzoneEdge = (DeadzoneEdge)Enum.Parse(typeof(DeadzoneEdge), deadzoneEdge);
+          if (reader.GetAttribute("DeadzoneScale") is string deadzoneScale)
+            DeadzoneScale = (DeadzoneScale)Enum.Parse(typeof(DeadzoneScale), deadzoneScale);
           if (reader.GetAttribute("Curve") is string curve)
             Curve = float.Parse(curve);
         }
@@ -245,6 +272,8 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
         InputAxis = other.InputAxis;
         InputAxisInvert = other.InputAxisInvert;
         Deadzone = other.Deadzone;
+        DeadzoneEdge = other.DeadzoneEdge;
+        DeadzoneScale = other.DeadzoneScale;
         Curve = other.Curve;
       }
       else if (other.InputHatAxis.HasValue)
