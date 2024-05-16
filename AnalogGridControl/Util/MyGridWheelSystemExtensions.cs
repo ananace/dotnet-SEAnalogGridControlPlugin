@@ -34,6 +34,19 @@ namespace AnanaceDev.AnalogGridControl.Util
       if (Math.Abs(force) > 0f && Sync.IsServer)
         system.Wheels.ForEach(wheel => wheel.UpdateBrake());
     }
+
+    public static void SetAccelForce(this MyGridWheelSystem system, float force)
+    {
+      if (!Sync.IsServer)
+      {
+        var grid = typeof(MyUpdateableGridSystem).GetProperty("Grid", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(system) as Sandbox.Game.Entities.MyCubeGrid;
+        AnalogGridControlSession.SendMessageToServer(new Network.AnalogInputUpdate{ GridId = grid.EntityId, AccelForce = force }, false);
+      }
+
+      var curVel = system.AngularVelocity;
+      curVel.Z = force;
+      system.AngularVelocity = curVel;
+    }
   }
 
 }

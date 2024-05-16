@@ -42,10 +42,12 @@ namespace AnanaceDev.AnalogGridControl
     
     public Vector3 _MovementVector = Vector3.Zero;
     public Vector3 _RotationVector = Vector3.Zero;
+    public float _AccelForce = 0;
     public float _BrakeForce = 0;
 
     public Vector3 MovementVector => _MovementVector;
     public Vector3 RotationVector => _RotationVector;
+    public float AccelForce => _BrakeForce;
     public float BrakeForce => _BrakeForce;
 
     public DirectInput DInput { get; set; }
@@ -96,6 +98,7 @@ namespace AnanaceDev.AnalogGridControl
       _MovementVector = Vector3.Zero;
       _RotationVector = Vector3.Zero;
       _BrakeForce = 0;
+      _AccelForce = 0;
     }
 
     public void UpdateInputs()
@@ -124,7 +127,9 @@ namespace AnanaceDev.AnalogGridControl
             float value = MyMath.Clamp(mapping.Value, -1f, 1f);
             switch (mapping.MappingAxis)
             {
-              case GameAxis.StrafeForward: value *= ForwardMult; break;
+              case GameAxis.StrafeForward:
+              // case GameAxis.Accelerate:
+                value *= ForwardMult; break;
               case GameAxis.StrafeForwardBackward:
               case GameAxis.StrafeLeftRight:
               case GameAxis.StrafeUpDown:
@@ -146,6 +151,7 @@ namespace AnanaceDev.AnalogGridControl
               case GameAxis.StrafeLeftRight: _MovementVector.X = Math.Abs(value) > Math.Abs(_MovementVector.X) ? value : _MovementVector.X; break;
               case GameAxis.StrafeUpDown: _MovementVector.Y = Math.Abs(value) > Math.Abs(_MovementVector.Y) ? value : _MovementVector.Y; break;
 
+              // case GameAxis.Accelerate: _AccelForce = Math.Abs(value) > _AccelForce ? MyMath.Clamp(value, 0f, 1f) : _AccelForce; break;
               case GameAxis.Brake: _BrakeForce = Math.Abs(value) > _BrakeForce ? MyMath.Clamp(value, 0f, 1f) : _BrakeForce; break;
 
               case GameAxis.TurnPitch: _RotationVector.X = Math.Abs(value) > Math.Abs(_RotationVector.X) ? value : _RotationVector.X; break;
@@ -182,13 +188,13 @@ namespace AnanaceDev.AnalogGridControl
 
       if (IsInputJustActivated(GameAction.InvertStrafeForward))
       {
-        MyPluginLog.Info("Inverting forward strafe");
+        MyPluginLog.Info("Inverting forward strafe/accelerate");
         ForwardMult = -ForwardMult;
         ForwardMultInvertAt = DateTime.Now;
       }
       else if (IsInputJustDeactivated(GameAction.InvertStrafeForward) && (DateTime.Now - ForwardMultInvertAt) > TimeSpan.FromMilliseconds(500))
       {
-        MyPluginLog.Info("Forward strafe invert released after hold, re-inverting");
+        MyPluginLog.Info("Forward strafe/accelerate invert released after hold, re-inverting");
         ForwardMult = -ForwardMult;
       }
 

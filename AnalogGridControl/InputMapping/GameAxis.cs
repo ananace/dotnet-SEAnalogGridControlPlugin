@@ -16,6 +16,8 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
     [EnumDescription("Strafe Up/Down")]
     StrafeUpDown,
 
+    // [EnumDescription("Accelerate (wheels)", "Same as Strafe Forward, but limited to only wheels. Toggle between forward/backward with Invert Strafe Forward action")]
+    // Accelerate,
     [EnumDescription("Brake (wheels)")]
     Brake,
 

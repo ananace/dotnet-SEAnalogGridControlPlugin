@@ -24,6 +24,7 @@ namespace AnanaceDev.AnalogGridControl
     public Vector3 MovementVector => Input.MovementVector;
     public Vector3 RotationVector => Input.RotationVector;
     public float BrakeForce => Input.BrakeForce;
+    public float AccelForce => Math.Max(Input.MovementVector.Z + Input.AccelForce, 1f);
 
     public uint? AnalogServerVersion = null;
     public bool AnalogWheelsAvailable => Plugin.ControllerPatched && (Sync.IsServer || AnalogServerVersion.HasValue);
@@ -267,7 +268,7 @@ namespace AnanaceDev.AnalogGridControl
           CurrentCockpit.TryEnableBrakes(Input.IsInputActive(GameAction.Brake) || Input.BrakeForce == 1f ||
               AnalogEmulation.ShouldTick(Input.BrakeForce, CurrentTick) ||
               // Emulate proportional acceleration as pulsed brakes for now
-              !AnalogEmulation.ShouldTick(MovementVector.Z * 2, CurrentTick));
+              !AnalogEmulation.ShouldTick(AccelForce * 2, CurrentTick));
         }
       }
       
@@ -353,7 +354,10 @@ namespace AnanaceDev.AnalogGridControl
         if (!grid.GridSystems.ControlSystem?.HasPilot(player.Id) ?? false)
           return;
 
-        grid.GridSystems.WheelSystem?.SetBrakingForce(inputUpdate.BrakeForce);
+        if (inputUpdate.BrakeForce.HasValue)
+          grid.GridSystems.WheelSystem?.SetBrakingForce(inputUpdate.BrakeForce.Value);
+        // if (inputUpdate.AccelForce.HasValue)
+        //   grid.GridSystems.WheelSystem?.SetAccelForce(inputUpdate.AccelForce.Value);
       }
       else if (packet is Network.AnalogAvailabilityRequest availabilityRequest)
       {
