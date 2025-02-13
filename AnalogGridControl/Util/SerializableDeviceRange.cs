@@ -14,6 +14,8 @@ namespace AnanaceDev.AnalogGridControl.Util
     public int? RangeMin { get; set; }
     public int? RangeMax { get; set; }
 
+    private SerializableDeviceRange() { }
+
     public SerializableDeviceRange(DeviceAxis axis, InputRange range)
     {
       Axis = axis;
