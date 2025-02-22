@@ -78,7 +78,7 @@ namespace AnanaceDev.AnalogGridControl.GUI
 #region Controls
       var caption = AddCaption(Caption);
 
-      var inputLabel = new MyGuiControlLabel(text: "Input");
+      var inputLabel = new MyGuiControlLabel(text: $"Input - {Device.DeviceName}");
       var inputTabs = new MyGuiControlTabControl
       {
         OriginAlign = MyGuiDrawAlignEnum.HORISONTAL_RIGHT_AND_VERTICAL_BOTTOM,
