@@ -186,14 +186,14 @@ namespace AnanaceDev.AnalogGridControl.GUI
       combinedSize += invertCheckbox.Size.Y + this.GetOptimalSpacer();
 
       var deadzoneLabel = new MyGuiControlLabel(text: "Deadzone", originAlign: MyGuiDrawAlignEnum.HORISONTAL_RIGHT_AND_VERTICAL_TOP);
-      var deadzoneChoice = new MyGuiControlSlider(labelText: "{0}", labelDecimalPlaces: 2, labelSpaceWidth: 0.05f, showLabel: true, defaultValue: Bind.Deadzone, originAlign: MyGuiDrawAlignEnum.HORISONTAL_LEFT_AND_VERTICAL_TOP);
+      var deadzoneChoice = new MyGuiControlSlider(labelText: "{0}%", labelDecimalPlaces: 0, labelSpaceWidth: 0.05f, showLabel: true, defaultValue: Bind.Deadzone * 100, originAlign: MyGuiDrawAlignEnum.HORISONTAL_LEFT_AND_VERTICAL_TOP, maxValue: 100);
 
       deadzoneChoice.ValueChanged += (_) => {
-        Bind.Deadzone = deadzoneChoice.Value;
+        Bind.Deadzone = deadzoneChoice.Value / 100.0f;
       };
       combinedSize += deadzoneChoice.Size.Y + this.GetOptimalSpacer();
 
-      var curveTooltip = "The input curve ranges from linear at 0 to cubic at 1";
+      var curveTooltip = "The input curve goes from linear at 0 to cubic at 1";
       var curveLabel = new MyGuiControlLabel(text: "Input Curve", originAlign: MyGuiDrawAlignEnum.HORISONTAL_RIGHT_AND_VERTICAL_TOP);
       var curveChoice = new MyGuiControlSlider(toolTip: curveTooltip, labelText: "{0}", labelDecimalPlaces: 2, labelSpaceWidth: 0.05f, showLabel: true, originAlign: MyGuiDrawAlignEnum.HORISONTAL_LEFT_AND_VERTICAL_TOP)
       {
@@ -332,6 +332,7 @@ namespace AnanaceDev.AnalogGridControl.GUI
 #endregion
     }
 
+    MyGuiControlSlider outputSlider;
     void BuildOutputAxisTab(MyGuiControlTabPage page)
     {
       page.Text = new StringBuilder("Axis");
@@ -356,20 +357,29 @@ namespace AnanaceDev.AnalogGridControl.GUI
       else
         axisChoice.SelectItemByIndex(0);
       combinedSize += axisChoice.Size.Y + this.GetOptimalSpacer();
+
+      var outputSliderLabel = new MyGuiControlLabel(text: "Output", originAlign: MyGuiDrawAlignEnum.HORISONTAL_RIGHT_AND_VERTICAL_TOP);
+      outputSlider = new MyGuiControlSlider(originAlign: MyGuiDrawAlignEnum.HORISONTAL_LEFT_AND_VERTICAL_TOP);
+      outputSlider.Enabled = false;
+      combinedSize += outputSlider.Size.Y;
 #endregion
 
 #region Layout
       var spacer = this.GetOptimalSpacerVector();
       var layout = new MyLayoutTable(page, page.Size * -0.5f + spacer, new Vector2(page.Size.X - spacer.X * 2, combinedSize));
       layout.SetColumnWidthsNormalized(0.25f, 0.75f);
-      layout.SetRowHeightsNormalized(1.0f);
+      layout.SetRowHeightsNormalized(0.85f, 0.15f);
 
       int row = 0;
       layout.Add(axisChoiceLabel, MyAlignH.Right, MyAlignV.Center, row, 0);
       layout.AddWithSize(axisChoice, MyAlignH.Left, MyAlignV.Center, row++, 1);
+
+      layout.Add(outputSliderLabel, MyAlignH.Right, MyAlignV.Center, row, 0);
+      layout.AddWithSize(outputSlider, MyAlignH.Left, MyAlignV.Center, row++, 1);
 #endregion
     }
 
+    MyGuiControlCheckbox outputCheckbox;
     void BuildOutputActionTab(MyGuiControlTabPage page)
     {
       page.Text = new StringBuilder("Action");
@@ -395,18 +405,39 @@ namespace AnanaceDev.AnalogGridControl.GUI
       else
         actionChoice.SelectItemByIndex(0);
       combinedSize += actionChoice.Size.Y + this.GetOptimalSpacer();
+
+      var outputCheckboxLabel = new MyGuiControlLabel(text: "Pressed", originAlign: MyGuiDrawAlignEnum.HORISONTAL_RIGHT_AND_VERTICAL_TOP);
+      outputCheckbox = new MyGuiControlCheckbox(originAlign: MyGuiDrawAlignEnum.HORISONTAL_LEFT_AND_VERTICAL_TOP);
+      outputCheckbox.Enabled = false;
+      combinedSize += outputCheckbox.Size.Y;
 #endregion
 
 #region Layout
       var spacer = this.GetOptimalSpacerVector();
       var layout = new MyLayoutTable(page, page.Size * -0.5f + spacer, new Vector2(page.Size.X - spacer.X * 2, combinedSize));
       layout.SetColumnWidthsNormalized(0.25f, 0.75f);
-      layout.SetRowHeightsNormalized(1.0f);
+      layout.SetRowHeightsNormalized(0.85f, 0.15f);
 
       int row = 0;
       layout.Add(actionChoiceLabel, MyAlignH.Right, MyAlignV.Center, row, 0);
       layout.AddWithSize(actionChoice, MyAlignH.Left, MyAlignV.Center, row++, 1);
+
+      layout.Add(outputCheckboxLabel, MyAlignH.Right, MyAlignV.Center, row, 0);
+      layout.AddWithSize(outputCheckbox, MyAlignH.Left, MyAlignV.Center, row++, 1);
 #endregion
+    }
+
+    public override bool Update(bool hasFocus)
+    {
+      var visualBind = Bind.Clone();
+      CleanBind(visualBind);
+      if (visualBind.InputAxis.HasValue || visualBind.InputButton.HasValue || (visualBind.InputHat.HasValue && visualBind.InputHatAxis.HasValue))
+        visualBind.Apply(Device.CurrentState, Device);
+
+      outputCheckbox.IsChecked = visualBind.IsActive;
+      outputSlider.Value = visualBind.Value;
+
+      return base.Update(hasFocus);
     }
 
     void OnCancelClicked(MyGuiControlButton _)
@@ -463,22 +494,30 @@ namespace AnanaceDev.AnalogGridControl.GUI
         OutputTab = OutputType.Action;
     }
 
+    void CleanBind(Bind bind)
+    {
+      if (BindTab != BindType.Axis)
+        bind.InputAxis = null;
+      if (BindTab != BindType.Hat)
+      {
+        bind.InputHat = null;
+        bind.InputHatAxis = null;
+      }
+      if (BindTab != BindType.Button)
+        bind.InputButton = null;
+
+      if (OutputTab != OutputType.Axis)
+        bind.MappingAxis = null;
+      if (OutputTab != OutputType.Action)
+        bind.MappingAction = null;
+    }
+
     void FinalizeBind()
     {
       if (_Result == MyGuiScreenMessageBox.ResultEnum.YES)
       {
         // Clear unwanted values to avoid generating a different bind than expected
-        if (BindTab != BindType.Axis)
-          Bind.InputAxis = null;
-        if (BindTab != BindType.Hat)
-          Bind.InputHatAxis = null;
-        if (BindTab != BindType.Button)
-          Bind.InputButton = null;
-
-        if (OutputTab != OutputType.Axis)
-          Bind.MappingAxis = null;
-        if (OutputTab != OutputType.Action)
-          Bind.MappingAction = null;
+        CleanBind(Bind);
       }
 
       ResultCallback?.Invoke(this, _Result);
