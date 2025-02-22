@@ -70,30 +70,31 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
 
         // Uses an adaptive deadzone, i.e. the deadzone range will be removed from the value range.
         // For a 5% deadzone this means that an input value of 5% will return 0 and an input value of 95% will return 100%
-        if (Deadzone > 0)
+        if (Deadzone > 0 && Deadzone < 1)
         {
           // Remap input into range -1 - 1 for easier deadzone math
           value = (value * 2) - 1;
-          float halfDeadzone = Deadzone / 2;
           switch(MappingAxis?.GetDeadzonePoint() ?? DeadzonePoint.None)
           {
           case DeadzonePoint.End:
-            if (Math.Abs(value) > 1 - halfDeadzone)
+            if (Math.Abs(value) > 1 - Deadzone)
               value = Math.Sign(value);
             else
-              value = value / (1 - halfDeadzone);
+              value = value / (1 - Deadzone);
             break;
 
           case DeadzonePoint.Mid:
-            if (Math.Abs(value) < halfDeadzone)
+            if (Math.Abs(value) < Deadzone)
               value = 0;
             else
-              value = (float)(Math.Sign(value) * MathExt.InverseLerp(halfDeadzone, 1.0, Math.Abs(value)));
+              value = (float)(Math.Sign(value) * MathExt.InverseLerp(Deadzone, 1.0, Math.Abs(value)));
             break;
           }
           // Remap value back to 0 - 1 range after deadzone calculation
           value = (value + 1) / 2;
         }
+        else if (Deadzone >= 1)
+          value = 0;
 
         if (Curve != 0.0f)
         {
@@ -259,7 +260,8 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
 
     public void ApplyValuesFrom(Bind other, bool onlyDevicePart = false)
     {
-      Clear();
+      if (!onlyDevicePart)
+        Clear();
 
       // Import relevant values from given bind
       if (other.InputAxis.HasValue)
