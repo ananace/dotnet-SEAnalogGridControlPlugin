@@ -257,7 +257,7 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
       return MemberwiseClone() as Bind;
     }
 
-    public void ApplyValuesFrom(Bind other)
+    public void ApplyValuesFrom(Bind other, bool onlyDevicePart = false)
     {
       Clear();
 
@@ -265,6 +265,9 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
       if (other.InputAxis.HasValue)
       {
         InputAxis = other.InputAxis;
+        if (onlyDevicePart)
+          return;
+
         InputAxisInvert = other.InputAxisInvert;
         Deadzone = other.Deadzone;
         Curve = other.Curve;
@@ -276,6 +279,9 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
       }
       else if (other.InputButton.HasValue)
         InputButton = other.InputButton;
+
+      if (onlyDevicePart)
+        return;
 
       if (other.MappingAxis.HasValue)
         MappingAxis = other.MappingAxis;

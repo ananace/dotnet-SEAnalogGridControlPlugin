@@ -433,7 +433,7 @@ namespace AnanaceDev.AnalogGridControl.GUI
 
     void OnBindDetected(Bind bind)
     {
-      Bind.ApplyValuesFrom(bind);
+      Bind.ApplyValuesFrom(bind, onlyDevicePart: true);
       SelectCurrentBindPages();
       RecreateControls(false);
     }
