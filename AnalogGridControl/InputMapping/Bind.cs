@@ -36,7 +36,7 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
     /// 0 is linear, 1 is x^3
     public float Curve { get; set; } = 0.0f;
 
-    public void Clear()
+    public void Clear(bool onlyDevicePart = false)
     {
       // Reset values to defaults
       InputAxis = null;
@@ -44,10 +44,14 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
       InputButton = null;
       InputHatAxis = null;
       InputHat = null;
-      MappingAxis = null;
-      MappingAction = null;
-      Deadzone = 0.05f;
-      Curve = 0.0f;
+      
+      if (!onlyDevicePart)
+      {
+        MappingAxis = null;
+        MappingAction = null;
+        Deadzone = 0.05f;
+        Curve = 0.0f;
+      }
 
       Reset();
     }
@@ -260,8 +264,7 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
 
     public void ApplyValuesFrom(Bind other, bool onlyDevicePart = false)
     {
-      if (!onlyDevicePart)
-        Clear();
+      Clear(onlyDevicePart);
 
       // Import relevant values from given bind
       if (other.InputAxis.HasValue)

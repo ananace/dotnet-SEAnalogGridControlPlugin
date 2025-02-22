@@ -465,11 +465,11 @@ namespace AnanaceDev.AnalogGridControl.GUI
     void OnBindDetected(Bind bind)
     {
       Bind.ApplyValuesFrom(bind, onlyDevicePart: true);
-      SelectCurrentBindPages();
+      SelectCurrentBindPages(onlyInput: true);
       RecreateControls(false);
     }
 
-    void SelectCurrentBindPages()
+    void SelectCurrentBindPages(bool onlyInput = false)
     {
       if (Bind.InputAxis.HasValue)
         BindTab = BindType.Axis;
@@ -483,6 +483,9 @@ namespace AnanaceDev.AnalogGridControl.GUI
         BindTab = BindType.Hat;
       else
         BindTab = BindType.Button;
+
+      if (onlyInput)
+        return;
 
       if (Bind.MappingAxis.HasValue)
         OutputTab = OutputType.Axis;
