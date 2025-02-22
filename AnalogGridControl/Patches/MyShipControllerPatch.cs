@@ -19,7 +19,7 @@ namespace AnanaceDev.AnalogGridControl.Patches
       /// Only direct player input seems to have actual analog scaling, autopilot and injected thrust intputs are binary - a.k.a. only zero or full, and overrides are messy.
       /// Also it's currently impossible to inject direct wheel inputs without overrides.
 
-      //MyPluginLog.Debug("Injecting analog input into ship controller...");
+      //MyPluginLog.Debug($"Injecting analog input into ship controller '{__instance.DisplayName}' on grid '{__instance.CubeGrid.DisplayName}'");
       //__instance.MoveAndRotate(analogInput.MovementVector, new VRageMath.Vector2(analogInput.RotationVector.X, analogInput.RotationVector.Y), analogInput.RotationVector.Z);
 
       var traverse = Traverse.Create(__instance);
@@ -28,7 +28,11 @@ namespace AnanaceDev.AnalogGridControl.Patches
       var oldRoll = traverse.Property("RollIndicator").GetValue<float>();
 
       var analogInput = AnalogGridControlSession.Instance;
-      __instance.MoveAndRotate(oldMove + analogInput.MovementVector, oldRot + new VRageMath.Vector2(analogInput.RotationVector.X, analogInput.RotationVector.Y), oldRoll + analogInput.RotationVector.Z);
+      __instance.MoveAndRotate(
+        oldMove + analogInput.MovementVector,
+        oldRot + new VRageMath.Vector2(analogInput.RotationVector.X, analogInput.RotationVector.Y),
+        oldRoll + analogInput.RotationVector.Z
+      );
     }
 
     static void Postfix(MyShipController __instance)

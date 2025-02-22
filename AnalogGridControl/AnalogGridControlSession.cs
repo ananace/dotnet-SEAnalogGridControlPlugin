@@ -46,6 +46,8 @@ namespace AnanaceDev.AnalogGridControl
     {
       Instance = this;
 
+      if (!Plugin.ControllerPatched)
+        MyPluginLog.Warning("Controller wasn't successfully patched, analog input won't work.");
 
       Input.ActionTriggered += OnActionTriggered;
       Input.ActionBegin += OnActionBegin;
@@ -84,20 +86,25 @@ namespace AnanaceDev.AnalogGridControl
 
       if (CurrentPlayer == null)
       {
-        MyPluginLog.Debug("AnalogGridControlSession - Found player");
+        MyPluginLog.Debug("AnalogGridControlSession - Found initial player, initializing devices");
 
         // Ensure all input devices are primed and clean
         Input.Devices.ForEach(dev => { dev.Update(false); dev.ResetBinds(); });
-
-        CurrentPlayer = Session.Player;
-        CurrentPlayer.Controller.ControlledEntityChanged += UpdateCurrentControlUnit;
-        UpdateCurrentControlUnit(null, CurrentPlayer.Controller.ControlledEntity);
 
         if (Plugin.ControllerPatched && !Sync.IsServer && !AnalogWheelAvailabilityRequested)
         {
           AnalogWheelAvailabilityRequested = true;
           SendMessageToServer(new Network.AnalogAvailabilityRequest(), true);
         }
+      }
+
+      if (CurrentPlayer != Session.Player)
+      {
+        MyPluginLog.Debug("AnalogGridControlSession - Updating current player link");
+
+        CurrentPlayer = Session.Player;
+        CurrentPlayer.Controller.ControlledEntityChanged += UpdateCurrentControlUnit;
+        UpdateCurrentControlUnit(null, CurrentPlayer.Controller.ControlledEntity);
       }
 
       if (!Session.IsServer && Plugin.InputRegistry.InputThrottleMultiplayerSpecified && (CurrentTick % Plugin.InputThrottleMultiplayer) != 0)
@@ -109,6 +116,11 @@ namespace AnanaceDev.AnalogGridControl
     public bool CanControl(IMyControllableEntity controllable)
     {
       if (AnalogGridControlSession.Instance != this)
+        return false;
+
+      // TODO: Figure out a way to correctly inject analog input while an in-game screen is open
+      // If input is injected it will compound open itself while the screen is open
+      if (Sandbox.Game.Gui.MyGuiScreenGamePlay.ActiveGameplayScreen != null)
         return false;
 
       if (Sandbox.Game.Gui.MyGuiScreenGamePlay.DisableInput || !IsAnalogInputActive)
@@ -261,9 +273,8 @@ namespace AnanaceDev.AnalogGridControl
       {
         CurrentCockpit.WheelJump(Input.IsInputActive(GameAction.WheelJump));
 
-        if (AnalogWheelsAvailable)
-          CurrentCockpit.TryEnableBrakes(Input.IsInputActive(GameAction.Brake) || Input.BrakeForce == 1f);
-        else
+        // Fake some analog input for wheels even if plugin isn't running on the server
+        if (!AnalogWheelsAvailable)
         {
           CurrentCockpit.TryEnableBrakes(Input.IsInputActive(GameAction.Brake) || Input.BrakeForce == 1f ||
               AnalogEmulation.ShouldTick(Input.BrakeForce, CurrentTick) ||
@@ -271,43 +282,6 @@ namespace AnanaceDev.AnalogGridControl
               !AnalogEmulation.ShouldTick(AccelForce * 2, CurrentTick));
         }
       }
-      
-      if (Plugin.ControllerPatched || !Sync.IsServer)
-        return;
-
-#region Fallbacks
-      // Fallback for if analog patch fails
-
-      // Inject normally, to hopefully work with recorder
-      CurrentCockpit.MoveAndRotate(Input.MovementVector, new Vector2(Input.RotationVector.X, Input.RotationVector.Y), Input.RotationVector.Z);
-
-      Matrix orientMatrix;
-      CurrentCockpit.Orientation.GetMatrix(out orientMatrix);
-      if (CurrentCockpit.ControlThrusters && CurrentCockpit.EntityThrustComponent != null)
-      {
-        CurrentCockpit.EntityThrustComponent.AutopilotEnabled = true;
-        if (Input.MovementVector.LengthSquared() > 0.0f)
-        {
-          Vector3 controlThrust;
-          Vector3 input = Input.MovementVector;
-          Vector3.RotateAndScale(ref input, ref orientMatrix, out controlThrust);
-          CurrentCockpit.EntityThrustComponent.AutoPilotControlThrust = -controlThrust;
-        }
-        else
-          CurrentCockpit.EntityThrustComponent.AutoPilotControlThrust = Vector3.Zero;
-
-        CurrentCockpit.EntityThrustComponent.AutoPilotControlThrustDampenersEnabled = CurrentControllable.DampenersOverride;
-      }
-
-      if (CurrentCockpit.ControlGyros && CurrentCockpit.GridGyroSystem != null)
-      {
-        CurrentCockpit.GridGyroSystem.AutopilotEnabled = true;
-        CurrentCockpit.GridGyroSystem.ControlTorque = Vector3.ClampToSphere(-Vector3.Transform(Input.RotationVector, orientMatrix), 1.0f);
-      }
-
-      CurrentCockpit.EntityThrustComponent?.MarkDirty();
-      CurrentCockpit.GridGyroSystem?.MarkDirty();
-#endregion
     }
 
 #region Networking
