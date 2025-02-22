@@ -1,21 +1,15 @@
-using System;
-
 namespace AnanaceDev.AnalogGridControl.InputMapping
 {
 
-  /// Which "edges" of the input that the deadzone should apply to.
-  [Flags]
-  public enum DeadzoneEdge
+  /// Which "point" of the input that the deadzone should apply to.
+  public enum DeadzonePoint
   {
-    /// Apply the deadzone near the lower edge. (near -1)
-    Lower  = 1 << 0,
-    /// Apply the deadzone near the center. (near 0)
-    Center = 1 << 1,
-    /// Apply the deadzone near the upper edge. (near 1)
-    Upper  = 1 << 2,
-
-    /// Apply the deadzone to all edges.
-    All = Lower | Center | Upper
+    /// Don't apply the deadzone anywhere on the range
+    None,
+    /// Apply the deadzone near the lower/upper end
+    End,
+    /// Apply the deadzone in the middle of the range
+    Mid
   }
 
 }

@@ -29,4 +29,27 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
     TurnRoll
   }
 
+  public static class GameAxisExtensions
+  {
+    public static DeadzonePoint GetDeadzonePoint(this GameAxis axis)
+    {
+      switch (axis)
+      {
+      case GameAxis.StrafeForward:
+      case GameAxis.Brake:
+        return DeadzonePoint.End;
+
+      case GameAxis.StrafeForwardBackward:
+      case GameAxis.StrafeLeftRight:
+      case GameAxis.StrafeUpDown:
+      case GameAxis.TurnPitch:
+      case GameAxis.TurnYaw:
+      case GameAxis.TurnRoll:
+        return DeadzonePoint.Mid;
+      }
+
+      return DeadzonePoint.None;
+    }
+  }
+
 }
