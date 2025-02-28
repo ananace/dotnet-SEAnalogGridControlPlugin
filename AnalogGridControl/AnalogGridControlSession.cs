@@ -81,7 +81,7 @@ namespace AnanaceDev.AnalogGridControl
     {
       ++CurrentTick;
 
-      if (Session.Player == null)
+      if (Session?.Player == null)
         return;
 
       if (CurrentPlayer == null)
@@ -92,10 +92,7 @@ namespace AnanaceDev.AnalogGridControl
         Input.Devices.ForEach(dev => { dev.Update(false); dev.ResetBinds(); });
 
         if (Plugin.ControllerPatched && !Sync.IsServer && !AnalogWheelAvailabilityRequested)
-        {
-          AnalogWheelAvailabilityRequested = true;
-          SendMessageToServer(new Network.AnalogAvailabilityRequest(), true);
-        }
+          AnalogWheelAvailabilityRequested = SendMessageToServer(new Network.AnalogAvailabilityRequest(), true);
       }
 
       if (CurrentPlayer != Session.Player)
@@ -147,44 +144,13 @@ namespace AnanaceDev.AnalogGridControl
       else if (CurrentControllable == null && oldControllable != null)
       {
         if (oldControllable is Sandbox.Game.Entities.MyShipController oldCockpit)
-        {
-          MyPluginLog.Debug("Detached from grid, clearing old analog state");
-
-          if (!Plugin.ControllerPatched && Sync.IsServer)
-          {
-            if (oldCockpit.EntityThrustComponent != null)
-            {
-              oldCockpit.EntityThrustComponent.AutopilotEnabled = false;
-              oldCockpit.EntityThrustComponent.AutoPilotControlThrust = Vector3.Zero;
-            }
-
-            if (oldCockpit.GridGyroSystem != null)
-            {
-              oldCockpit.GridGyroSystem.AutopilotEnabled = false;
-              oldCockpit.GridGyroSystem.ControlTorque = Vector3.Zero;
-            }
-          }
-        }
+          MyPluginLog.Debug("Detached from grid");
       }
     }
 
     private void OnActionTriggered(object _sender, GameAction action)
     {
-      if (action == GameAction.SwitchAnalogInputActive && !Plugin.ControllerPatched && !Input.IsAnalogInputActive && CurrentControllable is Sandbox.Game.Entities.MyShipController cockpit && Sync.IsServer)
-      {
-        if (cockpit.EntityThrustComponent != null)
-        {
-          cockpit.EntityThrustComponent.AutopilotEnabled = false;
-          cockpit.EntityThrustComponent.AutoPilotControlThrust = Vector3.Zero;
-        }
-        if (cockpit.GridGyroSystem != null)
-        {
-          cockpit.GridGyroSystem.AutopilotEnabled = false;
-          cockpit.GridGyroSystem.ControlTorque = Vector3.Zero;
-        }
-      }
-
-      if (CurrentControllable == null || !Input.IsAnalogInputActive)
+      if (CurrentPlayer == null || CurrentControllable == null || !Input.IsAnalogInputActive)
         return;
 
       switch (action)
@@ -232,7 +198,7 @@ namespace AnanaceDev.AnalogGridControl
 
     private void OnActionBegin(object _sender, GameAction action)
     {
-      if (CurrentControllable == null || !Input.IsAnalogInputActive)
+      if (CurrentPlayer == null || CurrentControllable == null || !Input.IsAnalogInputActive)
         return;
 
       var CurrentCockpit = CurrentControllable as Sandbox.Game.Entities.MyShipController;
@@ -249,7 +215,7 @@ namespace AnanaceDev.AnalogGridControl
 
     private void OnActionEnd(object _sender, GameAction action)
     {
-      if (CurrentControllable == null || !Input.IsAnalogInputActive)
+      if (CurrentPlayer == null || CurrentControllable == null || !Input.IsAnalogInputActive)
         return;
 
       var CurrentCockpit = CurrentControllable as Sandbox.Game.Entities.MyShipController;
@@ -285,22 +251,30 @@ namespace AnanaceDev.AnalogGridControl
     }
 
 #region Networking
-    public static void SendMessageToServer<T>(T msg, bool reliable) where T : Network.AnalogGridControlPacket
+    public static bool SendMessageToServer<T>(T msg, bool reliable) where T : Network.AnalogGridControlPacket
     {
-      using (var stream = new System.IO.MemoryStream())
-      {
-        ProtoBuf.Serializer.Serialize(stream, msg);
-        MyModAPIHelper.MyMultiplayer.Static.SendMessageToServer(Plugin.Id, stream.ToArray(), reliable);
-      }
+      if (Sync.MultiplayerActive)
+        using (var stream = new System.IO.MemoryStream())
+        {
+          ProtoBuf.Serializer.Serialize(stream, msg);
+          MyModAPIHelper.MyMultiplayer.Static.SendMessageToServer(Plugin.Id, stream.ToArray(), reliable);
+          return true;
+        }
+
+      return false;
     }
 
-    public static void SendMessageToPlayer<T>(T msg, ulong playerId, bool reliable) where T : Network.AnalogGridControlPacket
+    public static bool SendMessageToPlayer<T>(T msg, ulong playerId, bool reliable) where T : Network.AnalogGridControlPacket
     {
-      using (var stream = new System.IO.MemoryStream())
-      {
-        ProtoBuf.Serializer.Serialize(stream, msg);
-        MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(Plugin.Id, stream.ToArray(), playerId, reliable);
-      }
+      if (Sync.MultiplayerActive)
+        using (var stream = new System.IO.MemoryStream())
+        {
+          ProtoBuf.Serializer.Serialize(stream, msg);
+          MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(Plugin.Id, stream.ToArray(), playerId, reliable);
+          return true;
+        }
+
+      return false;
     }
 
     void OnReceiveAnalogUpdate(ushort id, byte[] data, ulong playerId, bool arrivedFromServer)
@@ -338,7 +312,7 @@ namespace AnanaceDev.AnalogGridControl
         if (!Sync.IsServer || id != Plugin.Id || arrivedFromServer)
           return;
 
-        SendMessageToPlayer(new Network.AnalogAvailabilityResponse { Version = AnalogServerVersion ?? Plugin.NetworkVersion }, playerId, true);
+        SendMessageToPlayer(new Network.AnalogAvailabilityResponse { Version = Plugin.NetworkVersion }, playerId, true);
       }
       else if (packet is Network.AnalogAvailabilityResponse availabilityResponse)
       {
