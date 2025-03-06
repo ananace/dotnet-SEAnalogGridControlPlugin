@@ -94,8 +94,8 @@ namespace AnanaceDev.AnalogGridControl
       {
         Directory.CreateDirectory(System.IO.Path.GetDirectoryName(configPath));
 
-        using (var text = File.CreateText(configPath))
-          new XmlSerializer(typeof(InputRegistry)).Serialize(text, InputRegistry);
+        var newConfigText = Sandbox.ModAPI.MyAPIGateway.Utilities.SerializeToXML<InputRegistry>(InputRegistry);
+        File.WriteAllText(configPath, newConfigText);
       }
       catch (Exception ex)
       {
