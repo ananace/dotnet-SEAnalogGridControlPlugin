@@ -92,7 +92,10 @@ namespace AnanaceDev.AnalogGridControl
         Input.Devices.ForEach(dev => { dev.Update(false); dev.ResetBinds(); });
 
         if (Plugin.ControllerPatched && !Sync.IsServer && !AnalogWheelAvailabilityRequested)
-          AnalogWheelAvailabilityRequested = SendMessageToServer(new Network.AnalogAvailabilityRequest(), true);
+        {
+          SendMessageToServer(new Network.AnalogAvailabilityRequest(), true);
+          AnalogWheelAvailabilityRequested = true; // Assume failure to send will remain a failure
+        }
       }
 
       if (CurrentPlayer != Session.Player)
@@ -253,26 +256,40 @@ namespace AnanaceDev.AnalogGridControl
 #region Networking
     public static bool SendMessageToServer<T>(T msg, bool reliable) where T : Network.AnalogGridControlPacket
     {
-      if (Sync.MultiplayerActive)
-        using (var stream = new System.IO.MemoryStream())
-        {
-          ProtoBuf.Serializer.Serialize(stream, msg);
-          MyModAPIHelper.MyMultiplayer.Static.SendMessageToServer(Plugin.Id, stream.ToArray(), reliable);
-          return true;
-        }
+      try
+      {
+        if (Sync.MultiplayerActive)
+          using (var stream = new System.IO.MemoryStream())
+          {
+              ProtoBuf.Serializer.Serialize(stream, msg);
+              MyModAPIHelper.MyMultiplayer.Static.SendMessageToServer(Plugin.Id, stream.ToArray(), reliable);
+            return true;
+          }
+      }
+      catch (Exception ex)
+      {
+        MyPluginLog.Warning($"Failed to send message {msg} to server; {ex}");
+      }
 
       return false;
     }
 
     public static bool SendMessageToPlayer<T>(T msg, ulong playerId, bool reliable) where T : Network.AnalogGridControlPacket
     {
-      if (Sync.MultiplayerActive)
-        using (var stream = new System.IO.MemoryStream())
-        {
-          ProtoBuf.Serializer.Serialize(stream, msg);
-          MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(Plugin.Id, stream.ToArray(), playerId, reliable);
-          return true;
-        }
+      try
+      {
+        if (Sync.MultiplayerActive)
+          using (var stream = new System.IO.MemoryStream())
+          {
+            ProtoBuf.Serializer.Serialize(stream, msg);
+            MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(Plugin.Id, stream.ToArray(), playerId, reliable);
+            return true;
+          }
+      }
+      catch (Exception ex)
+      {
+        MyPluginLog.Warning($"Failed to send message {msg} to player {playerId}; {ex}");
+      }
 
       return false;
     }
