@@ -23,6 +23,7 @@ namespace AnanaceDev.AnalogGridControl
     public bool IsAnalogInputActive => Input.IsAnalogInputActive;
     public Vector3 MovementVector => Input.MovementVector;
     public Vector3 RotationVector => Input.RotationVector;
+    public Vector2 CameraRotationVector => Input.CameraRotationVector;
     public float BrakeForce => Input.BrakeForce;
     public float AccelForce => Math.Max(Input.MovementVector.Z + Input.AccelForce, 1f);
 
@@ -251,6 +252,9 @@ namespace AnanaceDev.AnalogGridControl
               !AnalogEmulation.ShouldTick(AccelForce * 2, CurrentTick));
         }
       }
+
+      IMyCameraController cameraController = MyAPIGateway.Session?.CameraController;
+      cameraController.Rotate(CameraRotationVector, 0f);
     }
 
 #region Networking
