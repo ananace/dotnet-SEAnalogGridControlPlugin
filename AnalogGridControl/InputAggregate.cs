@@ -42,11 +42,13 @@ namespace AnanaceDev.AnalogGridControl
     
     public Vector3 _MovementVector = Vector3.Zero;
     public Vector3 _RotationVector = Vector3.Zero;
+    public Vector2 _CameraRotationVector = Vector2.Zero;
     public float _AccelForce = 0;
     public float _BrakeForce = 0;
 
     public Vector3 MovementVector => _MovementVector;
     public Vector3 RotationVector => _RotationVector;
+    public Vector2 CameraRotationVector => _CameraRotationVector;
     public float AccelForce => _BrakeForce;
     public float BrakeForce => _BrakeForce;
 
@@ -97,6 +99,7 @@ namespace AnanaceDev.AnalogGridControl
 
       _MovementVector = Vector3.Zero;
       _RotationVector = Vector3.Zero;
+      _CameraRotationVector = Vector2.Zero;
       _BrakeForce = 0;
       _AccelForce = 0;
     }
@@ -137,9 +140,13 @@ namespace AnanaceDev.AnalogGridControl
                 break;
 
               // Pitch in SE is inverted compared to how joysticks usually handle it
-              case GameAxis.TurnPitch: value = (value - 0.5f) * -40; break;
+              case GameAxis.TurnPitch: 
+              case GameAxis.CameraPitch:
+                value = (value - 0.5f) * -40; 
+                break;
               case GameAxis.TurnYaw:
               case GameAxis.TurnRoll:
+              case GameAxis.CameraYaw:
                 value = (value - 0.5f) * 40;
                 break;
             }
@@ -157,6 +164,9 @@ namespace AnanaceDev.AnalogGridControl
               case GameAxis.TurnPitch: _RotationVector.X = Math.Abs(value) > Math.Abs(_RotationVector.X) ? value : _RotationVector.X; break;
               case GameAxis.TurnYaw: _RotationVector.Y = Math.Abs(value) > Math.Abs(_RotationVector.Y) ? value : _RotationVector.Y; break;
               case GameAxis.TurnRoll: _RotationVector.Z = Math.Abs(value) > Math.Abs(_RotationVector.Z) ? value : _RotationVector.Z; break;
+              
+              case GameAxis.CameraPitch: _CameraRotationVector.X = Math.Abs(value) > Math.Abs(_CameraRotationVector.X) ? value : _CameraRotationVector.X; break;
+              case GameAxis.CameraYaw: _CameraRotationVector.Y = Math.Abs(value) > Math.Abs(_CameraRotationVector.Y) ? value : _CameraRotationVector.Y; break;
             }
           }
 
