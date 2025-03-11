@@ -254,7 +254,7 @@ namespace AnanaceDev.AnalogGridControl
       }
 
       IMyCameraController cameraController = MyAPIGateway.Session?.CameraController;
-      cameraController.Rotate(CameraRotationVector, 0f);
+      cameraController?.Rotate(CameraRotationVector, 0f);
     }
 
 #region Networking
