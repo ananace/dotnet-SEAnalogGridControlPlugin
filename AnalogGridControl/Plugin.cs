@@ -94,12 +94,18 @@ namespace AnanaceDev.AnalogGridControl
       {
         Directory.CreateDirectory(System.IO.Path.GetDirectoryName(configPath));
 
-        var newConfigText = Sandbox.ModAPI.MyAPIGateway.Utilities.SerializeToXML<InputRegistry>(InputRegistry);
+        string newConfigText;
+        using (var writer = new StringWriter())
+        {
+          new XmlSerializer(typeof(InputRegistry)).Serialize(writer, InputRegistry);
+          newConfigText = writer.ToString();
+        }
+
         File.WriteAllText(configPath, newConfigText);
       }
       catch (Exception ex)
       {
-        MyPluginLog.Warning($"Failed to save the configuration file: {configPath} - {ex}");
+        MyPluginLog.Error($"Failed to save the configuration file: {configPath} - {ex}");
       }
     }
 
