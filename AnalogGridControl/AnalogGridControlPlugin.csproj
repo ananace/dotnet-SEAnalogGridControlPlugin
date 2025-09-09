@@ -13,7 +13,7 @@
   <ItemGroup>
     <Reference Include="HarmonyLib">
       <Private>false</Private>
-      <HintPath>$(SpaceEngineersBin64)/0Harmony.dll</HintPath>
+      <HintPath>$(SpaceEngineersBin64)/Libraries/Legacy/0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="HavokWrapper">
       <Private>false</Private>
