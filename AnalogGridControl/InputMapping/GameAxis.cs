@@ -26,7 +26,12 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
     [EnumDescription("Yaw")]
     TurnYaw,
     [EnumDescription("Roll")]
-    TurnRoll
+    TurnRoll,
+
+    [EnumDescription("Camera Pitch")]
+    CameraPitch,
+    [EnumDescription("Camera Yaw")]
+    CameraYaw
   }
 
   public static class GameAxisExtensions
@@ -45,6 +50,8 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
       case GameAxis.TurnPitch:
       case GameAxis.TurnYaw:
       case GameAxis.TurnRoll:
+      case GameAxis.CameraPitch:
+      case GameAxis.CameraYaw:
         return DeadzonePoint.Mid;
       }
 

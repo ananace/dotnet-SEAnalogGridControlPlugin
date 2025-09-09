@@ -21,8 +21,10 @@ namespace AnanaceDev.AnalogGridControl
     public bool InputThrottleMultiplayerSpecified => InputThrottleMultiplayer <= 1;
 
 
-    public bool HasDevice(DeviceInstance device)
+    public bool HasDevice(DeviceInstance device, bool requireExact = false)
     {
+      if (requireExact)
+        return Devices.Any((reg) => reg.DeviceName == device.InstanceName && reg.DeviceUUID == device.InstanceGuid);
       return Devices.Any((reg) => reg.DeviceName == device.InstanceName);
     }
 
@@ -44,12 +46,15 @@ namespace AnanaceDev.AnalogGridControl
       if (verbose)
         MyPluginLog.Info("Checking for attached DirectInput devices...");
       var devices = dinput.GetDevices(DeviceClass.GameControl, DeviceEnumerationFlags.AttachedOnly) as IReadOnlyList<DeviceInstance>;
+      // Use less forgiving matching if multiple identical devices are being used.
+      var hasMulti = devices.Select(dev => dev.InstanceName).ContainsDuplicates()
+                  || Plugin.InputRegistry.Devices.Select(dev => dev.DeviceName).ContainsDuplicates();
 
       bool dirty = false;
       foreach (var device in devices)
       {
         InputDevice dev;
-        if (Plugin.InputRegistry.HasDevice(device))
+        if (Plugin.InputRegistry.HasDevice(device, hasMulti))
         {
           if (verbose)
             MyPluginLog.Info($"- Existing device '{device.InstanceName}' found.");
@@ -69,7 +74,7 @@ namespace AnanaceDev.AnalogGridControl
             dirty = true;
         }
 
-        if (!Plugin.InputRegistry.HasDevice(device))
+        if (!Plugin.InputRegistry.HasDevice(device, hasMulti))
         {
           Plugin.InputRegistry.Devices.Add(dev);
           dirty = true;
