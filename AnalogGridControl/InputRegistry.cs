@@ -33,7 +33,7 @@ namespace AnanaceDev.AnalogGridControl
       bool dirty = false;
       var initDevice = new Action<InputDevice, DeviceInstance>((dev, din) => {
         if (verbose)
-          MyPluginLog.Info($"- Matched existing device {din.InstanceName} / {din.InstanceGuid} to {dev.DeviceUUID}");
+          MyPluginLog.Info(String.Format("- {0} matched existing device {1}", (din.InstanceGuid == dev.DeviceUUID && din.InstanceName == dev.DeviceName) ? "Perfectly" : "Partially", din.InstanceName));
 
         if (dev.IsInitialized) 
           return;
@@ -44,11 +44,11 @@ namespace AnanaceDev.AnalogGridControl
       });
 
       // Claim disovered devices first by UUID, then by name and discovery order
-      ClaimDevices(dinputDevices, unclaimedDevices, (din, dev) => din.DeviceUUID == dev.InstanceGuid, initDevice);
+      ClaimDevices(dinputDevices, unclaimedDevices, (din, dev) => din.DeviceUUID == dev.InstanceGuid && din.DeviceName == dev.InstanceName, initDevice);
       ClaimDevices(dinputDevices, unclaimedDevices, (din, dev) => din.DeviceName == dev.InstanceName, (dev, din) => {
         initDevice(dev, din);
         if (verbose)
-          MyPluginLog.Info("  Used an unmatched device based on name + order, as no UUIDs matched.");
+          MyPluginLog.Info("  Used an unmatched device based on name + order, as no UUIDs perfectly matched.");
       });
 
       // Handle dinput devices that didn't find a claim
@@ -72,7 +72,6 @@ namespace AnanaceDev.AnalogGridControl
       List<DeviceInstance> handled = new List<DeviceInstance>();
       foreach (var device in toHandle)
       {
-        MyPluginLog.Debug($"Checking for match for {device.InstanceName} / {device.InstanceGuid}");
         if (unclaimed.FirstOrDefault(d => lambda(d, device)) is InputDevice claimed)
         {
           handled.Add(device);
