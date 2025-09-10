@@ -118,6 +118,8 @@ namespace AnanaceDev.AnalogGridControl
     {
       if (AnalogGridControlSession.Instance != this)
         return false;
+      if (controllable == null)
+        return false;
 
       // TODO: Figure out a way to correctly inject analog input while an in-game screen is open
       // If input is injected it will compound open itself while the screen is open
@@ -154,7 +156,7 @@ namespace AnanaceDev.AnalogGridControl
 
     private void OnActionTriggered(object _sender, GameAction action)
     {
-      if (CurrentPlayer == null || CurrentControllable == null || !Input.IsAnalogInputActive)
+      if (!CanControl(CurrentControllable))
         return;
 
       switch (action)
@@ -166,8 +168,7 @@ namespace AnanaceDev.AnalogGridControl
         case GameAction.SwitchLandingGears: CurrentControllable.SwitchLandingGears(); break;
       }
 
-      var CurrentCockpit = CurrentControllable as Sandbox.Game.Entities.MyShipController;
-      if (CurrentCockpit == null)
+      if (!(CurrentControllable is Sandbox.Game.Entities.MyShipController CurrentCockpit))
         return;
 
       switch (action)
@@ -202,11 +203,10 @@ namespace AnanaceDev.AnalogGridControl
 
     private void OnActionBegin(object _sender, GameAction action)
     {
-      if (CurrentPlayer == null || CurrentControllable == null || !Input.IsAnalogInputActive)
+      if (!CanControl(CurrentControllable))
         return;
 
-      var CurrentCockpit = CurrentControllable as Sandbox.Game.Entities.MyShipController;
-      if (CurrentCockpit == null)
+      if (!(CurrentControllable is Sandbox.Game.Entities.MyShipController CurrentCockpit))
         return;
 
       switch (action)
@@ -219,11 +219,10 @@ namespace AnanaceDev.AnalogGridControl
 
     private void OnActionEnd(object _sender, GameAction action)
     {
-      if (CurrentPlayer == null || CurrentControllable == null || !Input.IsAnalogInputActive)
+      if (!CanControl(CurrentControllable))
         return;
 
-      var CurrentCockpit = CurrentControllable as Sandbox.Game.Entities.MyShipController;
-      if (CurrentCockpit == null)
+      if (!(CurrentControllable is Sandbox.Game.Entities.MyShipController CurrentCockpit))
         return;
 
       switch (action)
@@ -236,7 +235,10 @@ namespace AnanaceDev.AnalogGridControl
 
     private void UpdateCurrentGridInputs()
     {
-      if (!Input.IsAnalogInputActive ||!(CurrentControllable is Sandbox.Game.Entities.MyShipController CurrentCockpit))
+      if (!CanControl(CurrentControllable))
+        return;
+
+      if (!(CurrentControllable is Sandbox.Game.Entities.MyShipController CurrentCockpit))
         return;
 
       if (CurrentCockpit.ControlWheels)
