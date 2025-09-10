@@ -214,6 +214,7 @@ namespace AnanaceDev.AnalogGridControl
         case GameAction.FirePrimary: CurrentCockpit.BeginShoot(MyShootActionEnum.PrimaryAction); break;
         case GameAction.FireSecondary: CurrentCockpit.BeginShoot(MyShootActionEnum.SecondaryAction); break;
         // case GameAction.FireTertiary: CurrentCockpit.BeginShoot(MyShootActionEnum.TertiaryAction); break;
+        case GameAction.Brake: CurrentCockpit.GridWheels?.SetBrakingForce(1.0f); break;
       }
     }
 
@@ -230,6 +231,7 @@ namespace AnanaceDev.AnalogGridControl
         case GameAction.FirePrimary: CurrentCockpit.EndShoot(MyShootActionEnum.PrimaryAction); break;
         case GameAction.FireSecondary: CurrentCockpit.EndShoot(MyShootActionEnum.SecondaryAction); break;
         // case GameAction.FireTertiary: CurrentCockpit.EndShoot(MyShootActionEnum.TertiaryAction); break;
+        case GameAction.Brake: CurrentCockpit.GridWheels?.SetBrakingForce(0.0f); break;
       }
     }
 
@@ -246,7 +248,11 @@ namespace AnanaceDev.AnalogGridControl
         CurrentCockpit.WheelJump(Input.IsInputActive(GameAction.WheelJump));
 
         // Fake some analog input for wheels even if plugin isn't running on the server
-        if (!AnalogWheelsAvailable)
+        if (AnalogWheelsAvailable)
+        {
+          CurrentCockpit.TryEnableBrakes(Input.IsInputActive(GameAction.Brake)); 
+        }
+        else
         {
           CurrentCockpit.TryEnableBrakes(Input.IsInputActive(GameAction.Brake) || Input.BrakeForce == 1f ||
               AnalogEmulation.ShouldTick(Input.BrakeForce, CurrentTick) ||
