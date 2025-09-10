@@ -72,13 +72,13 @@ namespace AnanaceDev.AnalogGridControl
       List<DeviceInstance> handled = new List<DeviceInstance>();
       foreach (var device in toHandle)
       {
-        if (unclaimed.FirstOrDefault(d => lambda(d, device)) is InputDevice claimed)
-        {
-          handled.Add(device);
-          unclaimed.Remove(claimed);
+        if (!(unclaimed.FirstOrDefault(d => lambda(d, device)) is InputDevice claimed))
+          continue;
 
-          onClaim.Invoke(claimed, device);
-        }
+        handled.Add(device);
+        unclaimed.Remove(claimed);
+
+        onClaim.Invoke(claimed, device);
       }
 
       handled.ForEach(dev => toHandle.Remove(dev));
