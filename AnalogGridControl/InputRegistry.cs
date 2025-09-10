@@ -18,74 +18,77 @@ namespace AnanaceDev.AnalogGridControl
 
     public ushort InputThrottleMultiplayer { get; set; } = 1;
     [XmlIgnore]
-    public bool InputThrottleMultiplayerSpecified => InputThrottleMultiplayer <= 1;
-
-
-    public bool HasDevice(DeviceInstance device, bool requireExact = false)
-    {
-      if (requireExact)
-        return Devices.Any((reg) => reg.DeviceName == device.InstanceName && reg.DeviceUUID == device.InstanceGuid);
-      return Devices.Any((reg) => reg.DeviceName == device.InstanceName);
-    }
-
-    // XXX: Some different Logitech devices seem to grab the same instance UUIDs
-    public InputDevice GetDevice(DeviceInstance device)
-    {
-      var potential = Devices.Where(reg => reg.DeviceName == device.InstanceName);
-      var attempted = potential.FirstOrDefault(reg => reg.DeviceUUID == device.InstanceGuid);
-      if (attempted == null)
-      {
-        MyPluginLog.Warning($"Found instances for '{device.InstanceName}', but none which match the given UUID, using the first discovered");
-        return potential.First();
-      }
-      return attempted;
-    }
+    public bool InputThrottleMultiplayerSpecified => InputThrottleMultiplayer > 1;
 
     public bool DiscoverDevices(DirectInput dinput, bool rediscover = false, bool verbose = true)
     {
       if (verbose)
         MyPluginLog.Info("Checking for attached DirectInput devices...");
-      var devices = dinput.GetDevices(DeviceClass.GameControl, DeviceEnumerationFlags.AttachedOnly) as IReadOnlyList<DeviceInstance>;
-      // Use less forgiving matching if multiple identical devices are being used.
-      var hasMulti = devices.Select(dev => dev.InstanceName).ContainsDuplicates()
-                  || Plugin.InputRegistry.Devices.Select(dev => dev.DeviceName).ContainsDuplicates();
+      var dinputDevices = dinput.GetDevices(DeviceClass.GameControl, DeviceEnumerationFlags.AttachedOnly).ToList();
+      var unclaimedDevices = Devices.ToList();
+
+      if (verbose)
+        MyPluginLog.Info($"Found {dinputDevices.Count} DirectInput devices");
 
       bool dirty = false;
-      foreach (var device in devices)
-      {
-        InputDevice dev;
-        if (Plugin.InputRegistry.HasDevice(device, hasMulti))
-        {
-          if (verbose)
-            MyPluginLog.Info($"- Existing device '{device.InstanceName}' found.");
-          dev = Plugin.InputRegistry.GetDevice(device);
-        }
-        else
-        {
-          if (verbose)
-            MyPluginLog.Info($"- New device '{device.InstanceName}' found.");
-          dev = new InputDevice();
-        }
+      var initDevice = new Action<InputDevice, DeviceInstance>((dev, din) => {
+        if (verbose)
+          MyPluginLog.Info($"- Matched existing device {din.InstanceName} / {din.InstanceGuid} to {dev.DeviceUUID}");
 
-        if (!dev.IsInitialized)
-        {
-          dev.Init(dinput, device);
-          if (rediscover)
-            dirty = true;
-        }
+        if (dev.IsInitialized) 
+          return;
 
-        if (!Plugin.InputRegistry.HasDevice(device, hasMulti))
-        {
-          Plugin.InputRegistry.Devices.Add(dev);
+        dev.Init(dinput, din);
+        if (rediscover)
           dirty = true;
+      });
+
+      // Claim disovered devices first by UUID, then by name and discovery order
+      ClaimDevices(dinputDevices, unclaimedDevices, (din, dev) => din.DeviceUUID == dev.InstanceGuid, initDevice);
+      ClaimDevices(dinputDevices, unclaimedDevices, (din, dev) => din.DeviceName == dev.InstanceName, (dev, din) => {
+        initDevice(dev, din);
+        if (verbose)
+          MyPluginLog.Info("  Used an unmatched device based on name + order, as no UUIDs matched.");
+      });
+
+      // Handle dinput devices that didn't find a claim
+      foreach (var dev in dinputDevices)
+      {
+        if (verbose)
+          MyPluginLog.Info($"- Found new device {dev.InstanceName}");
+
+        var device = new InputDevice();
+        device.Init(dinput, dev);
+
+        Devices.Add(device);
+        dirty = true;
+      }
+
+      return dirty;
+    }
+
+    void ClaimDevices(IList<DeviceInstance> toHandle, IList<InputDevice> unclaimed, Func<InputDevice, DeviceInstance, bool> lambda, Action<InputDevice, DeviceInstance> onClaim)
+    {
+      List<DeviceInstance> handled = new List<DeviceInstance>();
+      foreach (var device in toHandle)
+      {
+        MyPluginLog.Debug($"Checking for match for {device.InstanceName} / {device.InstanceGuid}");
+        if (unclaimed.FirstOrDefault(d => lambda(d, device)) is InputDevice claimed)
+        {
+          handled.Add(device);
+          unclaimed.Remove(claimed);
+
+          onClaim.Invoke(claimed, device);
         }
       }
-      return dirty;
+
+      handled.ForEach(dev => toHandle.Remove(dev));
     }
 
     public void Cleanup()
     {
       Devices.ForEach(dev => dev.CleanupBinds());
+      Devices.RemoveAll(dev => !dev.Binds.Any());
     }
 
     public void Dispose()
