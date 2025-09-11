@@ -32,6 +32,8 @@ namespace AnanaceDev.AnalogGridControl
 
     public void Init(object _gameObject)
     {
+      MyPluginLog.Info($"Analog Grid Control {Assembly.GetExecutingAssembly().GetName().Version} Running");
+
       AttemptPatches();
 
       LoadMappings();
