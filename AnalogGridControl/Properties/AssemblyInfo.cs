@@ -8,7 +8,7 @@ using System.Resources;
 [assembly: AssemblyProduct("AnalogGridControlPlugin")]
 [assembly: AssemblyCopyright("Copyright © Ananace 2025")]
 
-[assembly: AssemblyVersion("0.2.2.0")]
-[assembly: AssemblyFileVersion("0.2.2.0")]
+[assembly: AssemblyVersion("0.3.0.0")]
+[assembly: AssemblyFileVersion("0.3.0.0")]
 [assembly: AssemblyMetadata("RepositoryUrl", "https://github.com/ananace/dotnet-SEAnalogGridControlPlugin")]
 [assembly: NeutralResourcesLanguage("en")]
