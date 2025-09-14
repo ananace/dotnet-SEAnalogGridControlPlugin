@@ -30,11 +30,11 @@ namespace AnanaceDev.AnalogGridControl
     /// Is the input currently active
     public bool IsInputActive(GameAction action)
     {
-      return _Actions.HasFlag(action);
+      return _Actions.Contains(action);
     }
     public bool WasInputActive(GameAction action)
     {
-      return _LastActions.HasFlag(action);
+      return _LastActions.Contains(action);
     }
 
     float ForwardMult = -1;
@@ -55,8 +55,8 @@ namespace AnanaceDev.AnalogGridControl
     public DirectInput DInput { get; set; }
     List<InputDevice> _Inputs = new List<InputDevice>();
 
-    GameAction _LastActions = GameAction.None;
-    GameAction _Actions = GameAction.None;
+    GameAction[] _LastActions = new GameAction[0];
+    HashSet<GameAction> _Actions = new HashSet<GameAction>();
 
     public IReadOnlyList<InputDevice> Devices => _Inputs;
 
@@ -88,14 +88,14 @@ namespace AnanaceDev.AnalogGridControl
       device.Binds
         .Where(b => b.IsActionMapping && b.IsActive)
         .ForEach(b => {
-          _Actions &= ~b.MappingAction.Value;
+          _Actions.Remove(b.MappingAction.Value);
         });
     }
 
     public void Reset()
     {
-      _LastActions = _Actions;
-      _Actions = GameAction.None;
+      _LastActions = _Actions.ToArray();
+      _Actions.Clear();
 
       _MovementVector = Vector3.Zero;
       _RotationVector = Vector3.Zero;
@@ -175,7 +175,7 @@ namespace AnanaceDev.AnalogGridControl
             bool value = mapping.IsActive;
 
             if (value)
-              _Actions |= mapping.MappingAction.Value;
+              _Actions.Add(mapping.MappingAction.Value);
           }
         }
       }

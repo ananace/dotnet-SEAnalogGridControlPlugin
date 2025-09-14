@@ -182,6 +182,8 @@ namespace AnanaceDev.AnalogGridControl
             CurrentCockpit.Pilot.TargetLockingComp.ReleaseTargetLockRequest();
           break;
 
+        case GameAction.ToolbarActionNext: CurrentCockpit.Toolbar.SelectNextSlot(); break;
+        case GameAction.ToolbarActionPrev: CurrentCockpit.Toolbar.SelectPreviousSlot(); break;
         case GameAction.ToolbarAction1: CurrentCockpit.Toolbar.ActivateItemAtSlot(0); break;
         case GameAction.ToolbarAction2: CurrentCockpit.Toolbar.ActivateItemAtSlot(1); break;
         case GameAction.ToolbarAction3: CurrentCockpit.Toolbar.ActivateItemAtSlot(2); break;
@@ -191,13 +193,19 @@ namespace AnanaceDev.AnalogGridControl
         case GameAction.ToolbarAction7: CurrentCockpit.Toolbar.ActivateItemAtSlot(6); break;
         case GameAction.ToolbarAction8: CurrentCockpit.Toolbar.ActivateItemAtSlot(7); break;
         case GameAction.ToolbarAction9: CurrentCockpit.Toolbar.ActivateItemAtSlot(8); break;
-
         case GameAction.ToolbarActionHolster: CurrentCockpit.Toolbar.ActivateItemAtSlot(CurrentCockpit.Toolbar.SlotCount); break;
 
         case GameAction.ToolbarSwitchNext: CurrentCockpit.Toolbar.PageUp(); break;
         case GameAction.ToolbarSwitchPrev: CurrentCockpit.Toolbar.PageDown(); break;
-        case GameAction.ToolbarActionNext: CurrentCockpit.Toolbar.SelectNextSlot(); break;
-        case GameAction.ToolbarActionPrev: CurrentCockpit.Toolbar.SelectPreviousSlot(); break;
+        case GameAction.ToolbarSwitch1: CurrentCockpit.Toolbar.SwitchToPage(0); break;
+        case GameAction.ToolbarSwitch2: CurrentCockpit.Toolbar.SwitchToPage(1); break;
+        case GameAction.ToolbarSwitch3: CurrentCockpit.Toolbar.SwitchToPage(2); break;
+        case GameAction.ToolbarSwitch4: CurrentCockpit.Toolbar.SwitchToPage(3); break;
+        case GameAction.ToolbarSwitch5: CurrentCockpit.Toolbar.SwitchToPage(4); break;
+        case GameAction.ToolbarSwitch6: CurrentCockpit.Toolbar.SwitchToPage(5); break;
+        case GameAction.ToolbarSwitch7: CurrentCockpit.Toolbar.SwitchToPage(6); break;
+        case GameAction.ToolbarSwitch8: CurrentCockpit.Toolbar.SwitchToPage(7); break;
+        case GameAction.ToolbarSwitch9: CurrentCockpit.Toolbar.SwitchToPage(8); break;
       }
     }
 
