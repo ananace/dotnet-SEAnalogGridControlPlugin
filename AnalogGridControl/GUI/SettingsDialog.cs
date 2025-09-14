@@ -111,7 +111,7 @@ namespace AnanaceDev.AnalogGridControl.GUI
 
         var row = new MyGuiControlTable.Row(dev);
         row.AddCell(new MyGuiControlTable.Cell(dev.IsValid ? "OK" : "N/A", textColor: dev.IsValid ? Color.Green : Color.OrangeRed));
-        row.AddCell(new MyGuiControlTable.Cell(dev.DeviceName, toolTip: tip));
+        row.AddCell(new MyGuiControlTable.Cell(dev.DisplayName, toolTip: tip));
         row.AddCell(new MyGuiControlTable.Cell(dev.Binds.Count.ToString()));
 
         var editCell = new MyGuiControlTable.Cell(toolTip: "Edit");

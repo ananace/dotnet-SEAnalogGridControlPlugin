@@ -19,6 +19,10 @@ namespace AnanaceDev.AnalogGridControl
     [XmlArray("Binds"), XmlArrayItem("Bind")]
     public List<Bind> Binds { get; private set; } = new List<Bind>();
 
+    string _DisplayName = null;
+    [XmlAttribute("DisplayName")]
+    public string DisplayName { get { return _DisplayName ?? DeviceName; } set { _DisplayName = value; } }
+
     [XmlIgnore]
     public DirectInput DInput { get; private set; } = null;
     [XmlIgnore]

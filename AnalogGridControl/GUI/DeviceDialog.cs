@@ -47,7 +47,7 @@ namespace AnanaceDev.AnalogGridControl.GUI
       base.RecreateControls(constructor);
 
 #region Controls
-      var caption = AddCaption(Device.DeviceName);
+      var caption = AddCaption(Device.DisplayName);
 
       bindsList = new MyGuiControlTable()
       {
@@ -71,7 +71,21 @@ namespace AnanaceDev.AnalogGridControl.GUI
       );
       addBindButton.ButtonClicked += AddBindPressed;
 
+      var nameDialog = new MyGuiControlTextbox(
+        defaultText: Device.DisplayName
+      );
+      nameDialog.SetToolTip("Device Display Name");
+
+      var renameButton = new MyGuiControlButton(
+        originAlign: MyGuiDrawAlignEnum.HORISONTAL_RIGHT_AND_VERTICAL_TOP,
+        visualStyle: MyGuiControlButtonStyleEnum.SquareSmall, toolTip: "Rename Device"
+      );
+      renameButton.AddImageToButton(@"Textures\GUI\Icons\buttons\Script.dds");
+      renameButton.ButtonClicked += b => RenameDevicePressed(nameDialog, b);
+
       Controls.Add(addBindButton);
+      Controls.Add(nameDialog);
+      Controls.Add(renameButton);
       Controls.Add(bindsList);
 #endregion
 
@@ -80,6 +94,9 @@ namespace AnanaceDev.AnalogGridControl.GUI
       var spacer = this.GetOptimalSpacerVector();
 
       addBindButton.Position = bottomRight - spacer;
+      renameButton.PositionToLeftOf(addBindButton, spacing: spacer.X);
+      nameDialog.SetMaxSize(new Vector2(nameDialog.Size.X, renameButton.Size.Y));
+      nameDialog.PositionToLeftOf(renameButton, MyAlignV.Top, spacing: 0);
 
       bindsList.Position = new Vector2(bottomRight.X - spacer.X, caption.GetCoordTopLeftFromAligned().Y + caption.Size.Y + spacer.Y);
       bindsList.SetTableHeight(addBindButton.GetCoordTopLeftFromAligned().Y - caption.GetCoordTopLeftFromAligned().Y - spacer.Y * 2);
@@ -128,6 +145,13 @@ namespace AnanaceDev.AnalogGridControl.GUI
 
         bindsList.Add(row);
       }
+    }
+
+    void RenameDevicePressed(MyGuiControlTextbox name, MyGuiControlButton button)
+    {
+      Device.DisplayName = name.Text;
+
+      RecreateControls(false);
     }
 
     void AddBindPressed(MyGuiControlButton button)
