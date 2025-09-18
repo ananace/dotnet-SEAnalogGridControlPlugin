@@ -205,13 +205,20 @@ namespace AnanaceDev.AnalogGridControl
         }
       }
 
-      if (IsInputJustActivated(GameAction.InvertStrafeForward))
+      if (IsInputJustActivated(GameAction.InvertStrafeForwardToggle))
+      {
+        MyPluginLog.Info("Toggling invert forward strafe/accelerate");
+        ForwardMult = -ForwardMult;
+      }
+      if (IsInputJustActivated(GameAction.InvertStrafeForward) || IsInputJustActivated(GameAction.InvertStrafeForwardHold))
       {
         MyPluginLog.Info("Inverting forward strafe/accelerate");
         ForwardMult = -ForwardMult;
         ForwardMultInvertAt = DateTime.Now;
       }
-      else if (IsInputJustDeactivated(GameAction.InvertStrafeForward) && (DateTime.Now - ForwardMultInvertAt) > TimeSpan.FromMilliseconds(500))
+      if (
+          (IsInputJustDeactivated(GameAction.InvertStrafeForward) && (DateTime.Now - ForwardMultInvertAt) > TimeSpan.FromMilliseconds(500)) ||
+          IsInputJustDeactivated(GameAction.InvertStrafeForwardHold))
       {
         MyPluginLog.Info("Forward strafe/accelerate invert released after hold, re-inverting");
         ForwardMult = -ForwardMult;

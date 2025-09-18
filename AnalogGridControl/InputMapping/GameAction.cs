@@ -10,6 +10,10 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
 
     [EnumDescription("Invert Strafe Forward", "Toggle the Strafe Forward bind between being forward/backward,\nworks as both a toggle and a hold")]
     InvertStrafeForward,
+    [EnumDescription("Invert Strafe Forward (Toggle)", "Toggle the Strafe Forward bind between being forward/backward,")]
+    InvertStrafeForwardToggle,
+    [EnumDescription("Invert Strafe Forward (Hold)", "Change the Strafe Forward bind between being forward/backward while held,")]
+    InvertStrafeForwardHold,
     [EnumDescription("Toggle Analog Input Active", "Toggle if analog input should be applied to the currently piloted grid,\ndefault can be chosen in the main settings")]
     SwitchAnalogInputActive,
 
