@@ -133,6 +133,10 @@ namespace AnanaceDev.AnalogGridControl
               case GameAxis.StrafeForward:
               // case GameAxis.Accelerate:
                 value *= ForwardMult; break;
+              case GameAxis.StrafeLeft:
+              case GameAxis.StrafeDown:
+                value *= -1;
+                break;
               case GameAxis.StrafeForwardBackward:
               case GameAxis.StrafeLeftRight:
               case GameAxis.StrafeUpDown:
@@ -154,8 +158,13 @@ namespace AnanaceDev.AnalogGridControl
             switch (mapping.MappingAxis)
             {
               case GameAxis.StrafeForward:
+              case GameAxis.StrafeBackward:
               case GameAxis.StrafeForwardBackward: _MovementVector.Z = Math.Abs(value) > Math.Abs(_MovementVector.Z) ? value : _MovementVector.Z; break;
+              case GameAxis.StrafeLeft:
+              case GameAxis.StrafeRight:
               case GameAxis.StrafeLeftRight: _MovementVector.X = Math.Abs(value) > Math.Abs(_MovementVector.X) ? value : _MovementVector.X; break;
+              case GameAxis.StrafeUp:
+              case GameAxis.StrafeDown:
               case GameAxis.StrafeUpDown: _MovementVector.Y = Math.Abs(value) > Math.Abs(_MovementVector.Y) ? value : _MovementVector.Y; break;
 
               // case GameAxis.Accelerate: _AccelForce = Math.Abs(value) > _AccelForce ? MyMath.Clamp(value, 0f, 1f) : _AccelForce; break;

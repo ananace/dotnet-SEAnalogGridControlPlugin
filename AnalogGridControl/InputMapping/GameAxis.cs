@@ -8,11 +8,20 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
     // For HOTAS/pedal usage, single-axis which swaps direction on button press
     [EnumDescription("Strafe Forward", "For HOTAS/Pedal use, toggle between forward/backward with Invert Strafe Forward action")]
     StrafeForward,
+    StrafeBackward,
 
     [EnumDescription("Strafe Forward/Backward")]
     StrafeForwardBackward,
-    [EnumDescription("Strafe Left/Right", "This also handles turning on wheeled vehicles.")]
+
+    [EnumDescription("Strafe/Turn Left", "This also handles turning on wheeled vehicles.")]
+    StrafeLeft,
+    [EnumDescription("Strafe/Turn Right", "This also handles turning on wheeled vehicles.")]
+    StrafeRight,
+    [EnumDescription("Strafe/Turn Left/Right", "This also handles turning on wheeled vehicles.")]
     StrafeLeftRight,
+
+    StrafeUp,
+    StrafeDown,
     [EnumDescription("Strafe Up/Down")]
     StrafeUpDown,
 
@@ -41,6 +50,11 @@ namespace AnanaceDev.AnalogGridControl.InputMapping
       switch (axis)
       {
       case GameAxis.StrafeForward:
+      case GameAxis.StrafeBackward:
+      case GameAxis.StrafeLeft:
+      case GameAxis.StrafeRight:
+      case GameAxis.StrafeUp:
+      case GameAxis.StrafeDown:
       case GameAxis.Brake:
         return DeadzonePoint.End;
 
